@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.nbcamp.b4trello.dto.CardRequestDto;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -27,8 +29,6 @@ public class Card {
 
 	private String content;
 
-	private CardStatus cardStatus;
-
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Column column;
@@ -38,4 +38,11 @@ public class Card {
 
 	private LocalDate dueDate;
 
+	public Card(Column column, CardRequestDto requestDto, User user) {
+		this.column = column;
+		this.user = user;
+		title = requestDto.getTitle();
+		content = requestDto.getContent();
+		dueDate = requestDto.getDueDate();
+	}
 }
