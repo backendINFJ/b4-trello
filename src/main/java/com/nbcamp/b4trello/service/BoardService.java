@@ -16,7 +16,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.lang.model.type.ErrorType;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -106,6 +108,48 @@ public class BoardService {
         }
 
         boardRepository.delete(board);
+    }
+
+    /**
+     *
+     * @param userBoard 유저 권한 체크 MANAGER or USer
+     * @param id -> 해당 보드 아이디
+     * @param userEmail -> 사용자 초대
+     * @return 사용자 초대 완료
+     */
+    @Transactional
+    public String inviteUser(UserBoard userBoard, Long id, String userEmail) {
+
+        if (userBoard.getUserType() == UserType.USER) {
+            throw new RuntimeException(ErrorMessageEnum.BOARD_NOT_INVITED.getMessage());
+        }
+
+        Board board = boardRepository.findById(id).orElseThrow();
+        Optional<UserBoard> userBoardOptional = userBoardRepository.findByUserEmail(userEmail);
+
+        // 이미 초대 된 사용자를 초대 한 경우
+        if (userBoardOptional.isPresent()) {
+            throw new RuntimeException(ErrorMessageEnum.BOARD_NOT_INVIATION.getMessage());
+        }
+
+        User invitedUser = userRepository.findByEmail(userEmail).orElseThrow(
+                () -> new RuntimeException(ErrorMessageEnum.USER_NOT_FOUND.getMessage())
+        );
+
+        // 해당 유저쪽 개발되면 리팩토링 예정
+        User changedUser = User.builder().email(invitedUser.getEmail())
+                .password(invitedUser.getPassword())
+                .name(invitedUser.getName())
+                .refreshToken(invitedUser.getRefreshToken())
+                .role(UserType.UserType_MANAGER) // 튜텨님 질문 통해 해결
+                .build();
+
+        UserBoard inviteUser = UserBoard.builder()
+                .user(changedUser).board(board).build();
+
+        userBoardRepository.save(userBoard);
+        return userEmail + " 사용자를 초대 완료하였습니다.";
+
     }
 
 
