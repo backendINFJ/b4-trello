@@ -2,10 +2,12 @@ package com.nbcamp.b4trello.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nbcamp.b4trello.dto.CardRequestDto;
@@ -44,5 +46,18 @@ public class CardController {
 				ResponseEnum.CREATE_CARD, responseDto));
 	}
 
+	/**
+	 * 카드 단권 조회
+	 * @param cardId 조회할 카드 아아디
+	 * @return CardResponseDto 반환
+	 */
+	@GetMapping("/{cardId}")
+	public ResponseEntity<CommonResponse<CardResponseDto>> getCard(
+		@RequestParam long cardId) {
 
+		CardResponseDto responseDto = cardService.getCard(cardId);
+		return ResponseEntity.ok(
+			new CommonResponse<CardResponseDto>(
+				ResponseEnum.GET_CARD, responseDto));
+	}
 }

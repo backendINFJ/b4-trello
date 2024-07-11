@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import com.nbcamp.b4trello.dto.CardResponseDto;
 import com.nbcamp.b4trello.dto.ColumnRepository;
 import com.nbcamp.b4trello.dto.CardRequestDto;
+import com.nbcamp.b4trello.dto.ErrorMessageEnum;
 import com.nbcamp.b4trello.entity.Card;
 import com.nbcamp.b4trello.entity.User;
 import com.nbcamp.b4trello.repository.CardRepository;
@@ -31,4 +32,15 @@ public class CardService {
 
 		return new CardResponseDto(card);
 	}
+
+	/**
+	 * 카드 단권 조회
+	 * @param cardId 아이디 조회
+	 * @return CardResponseDto 로 반환
+	 */
+	public CardResponseDto getCard(long cardId) {
+		return new CardResponseDto(cardRepository.findById(cardId).orElseThrow(
+			() -> new IllegalArgumentException(ErrorMessageEnum.CARD_NOT_FOUND.getMessage())));
+	}
+
 }
