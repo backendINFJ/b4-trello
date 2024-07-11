@@ -13,5 +13,6 @@ public class CardRequestDto {
 	@NotEmpty
 	private long columnId;
 	private long userId;
+	private String manager;
 	private LocalDate dueDate;
 }

@@ -5,6 +5,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nbcamp.b4trello.dto.CardRequestDto;
 import com.nbcamp.b4trello.dto.CardResponseDto;
+import com.nbcamp.b4trello.dto.CardUpdateRequestDto;
 import com.nbcamp.b4trello.dto.CommonResponse;
 import com.nbcamp.b4trello.dto.ResponseEnum;
 import com.nbcamp.b4trello.security.UserDetailsImpl;
@@ -35,7 +37,7 @@ public class CardController {
 	 */
 	@PostMapping
 	public ResponseEntity<CommonResponse<CardResponseDto>> createCard(
-		@PathVariable("columnId") long columnId,
+		@PathVariable long columnId,
 		@RequestBody CardRequestDto cardRequestDto,
 		@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
@@ -53,9 +55,49 @@ public class CardController {
 	 */
 	@GetMapping("/{cardId}")
 	public ResponseEntity<CommonResponse<CardResponseDto>> getCard(
-		@RequestParam long cardId) {
+		@PathVariable long cardId) {
 
 		CardResponseDto responseDto = cardService.getCard(cardId);
+		return ResponseEntity.ok(
+			new CommonResponse<CardResponseDto>(
+				ResponseEnum.GET_CARD, responseDto));
+	}
+
+	/**
+	 * 카드 수정
+	 * @param cardId
+	 * @param columnId
+	 * @param userDetails
+	 * @param requestDto
+	 * @return
+	 */
+	@PutMapping("/{cardId}")
+	public ResponseEntity<CommonResponse<CardResponseDto>> updateCard(
+		@PathVariable long cardId,
+		@PathVariable long columnId,
+		@AuthenticationPrincipal UserDetailsImpl userDetails,
+		@RequestBody CardUpdateRequestDto requestDto) {
+
+		CardResponseDto responseDto =
+			cardService.updateCard(columnId, cardId, userDetails.getUser(), requestDto);
+		return ResponseEntity.ok(
+			new CommonResponse<CardResponseDto>(
+				ResponseEnum.GET_CARD, responseDto));
+	}
+
+	/**
+	 * 컬럼 위치 변경
+	 * @param cardId
+	 * @param columnId
+	 * @return
+	 */
+	@PutMapping("/{cardId}/move")
+	public ResponseEntity<CommonResponse<CardResponseDto>> moveCard(
+		@PathVariable long cardId,
+		@PathVariable long columnId) {
+
+		CardResponseDto responseDto = cardService.moveCard(columnId, cardId);
+
 		return ResponseEntity.ok(
 			new CommonResponse<CardResponseDto>(
 				ResponseEnum.GET_CARD, responseDto));

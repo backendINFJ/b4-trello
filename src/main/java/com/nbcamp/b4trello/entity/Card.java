@@ -6,6 +6,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.nbcamp.b4trello.dto.CardRequestDto;
+import com.nbcamp.b4trello.dto.CardUpdateRequestDto;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -36,13 +37,28 @@ public class Card {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private User user;
 
+	private String manager;
+
 	private LocalDate dueDate;
 
 	public Card(Column column, CardRequestDto requestDto, User user) {
 		this.column = column;
 		this.user = user;
+		this.manager = requestDto.getManager();
 		title = requestDto.getTitle();
 		content = requestDto.getContent();
 		dueDate = requestDto.getDueDate();
+	}
+
+	public void update(CardUpdateRequestDto requestDto) {
+		if (requestDto.getTitle() != null) this.title = requestDto.getTitle();
+		if (requestDto.getContent() != null) this.content = requestDto.getContent();
+		if (requestDto.getDueDate() != null) this.dueDate = requestDto.getDueDate();
+		if (requestDto.getManager() != null) this.manager = requestDto.getManager();
+
+	}
+
+	public void move(Column column) {
+		this.column = column;
 	}
 }
