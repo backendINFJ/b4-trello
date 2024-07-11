@@ -4,6 +4,7 @@ import com.nbcamp.b4trello.dto.BoardRequestDto;
 import com.nbcamp.b4trello.dto.BoardResponseDto;
 import com.nbcamp.b4trello.dto.CommonResponse;
 import com.nbcamp.b4trello.dto.ResponseEnum;
+import com.nbcamp.b4trello.entity.UserBoard;
 import com.nbcamp.b4trello.security.UserDetailsImpl;
 import com.nbcamp.b4trello.service.BoardService;
 import jakarta.validation.Valid;
@@ -11,10 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,19 +25,19 @@ public class BoardController {
     /**
      * 보드 생성
      *
-     * @param userDetails 로그인한 사용자의 정보
+     * @param userBoard 사용자의 정보
      * @param boardRequestDto 보드생성 요청 데이터
      * @return 201 OK,"보드 생성 완료" 보드 생성
      */
     @PostMapping()
     public ResponseEntity<CommonResponse<BoardResponseDto>> createBoard(
-            @AuthenticationPrincipal UserDetailsImpl userDetails, @Valid @RequestBody BoardRequestDto boardRequestDto) {
+            @AuthenticationPrincipal UserBoard userBoard, @Valid @RequestBody BoardRequestDto boardRequestDto) {
 
-        BoardResponseDto boardresponseDto = boardService.createBoard(userDetails, boardRequestDto);
+        BoardResponseDto boardResponseDto = boardService.createBoard(boardRequestDto, userBoard);
         CommonResponse<BoardResponseDto> response = CommonResponse.<BoardResponseDto>builder()
                 .statusCode(HttpStatus.CREATED)
                 .message(ResponseEnum.CREATE_BOARD.getMessage())
-                .data(boardresponseDto)
+                .data(boardResponseDto)
                 .build();
 
         return ResponseEntity.status(ResponseEnum.CREATE_BOARD.getHttpStatus()).body(response);
@@ -64,5 +62,19 @@ public class BoardController {
                 .build();
 
         return ResponseEntity.status(ResponseEnum.READ_BOARD.getHttpStatus()).body(response);
+    }
+
+    @PatchMapping("/{boardId}")
+    public ResponseEntity<CommonResponse<BoardResponseDto>> updateBoard(
+            @AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long boardId, @Valid @RequestBody BoardRequestDto boardRequestDto) {
+
+        BoardResponseDto boardResponseDto = boardService.updateBoard(userDetails, boardId, boardRequestDto);
+        CommonResponse<BoardResponseDto> response = CommonResponse.<BoardResponseDto>builder()
+                .statusCode(HttpStatus.OK)
+                .message(ResponseEnum.UPDATE_BOARD.getMessage())
+                .data(boardResponseDto)
+                .build();
+
+        return ResponseEntity.status(ResponseEnum.UPDATE_BOARD.getHttpStatus()).body(response);
     }
 }

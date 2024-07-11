@@ -14,4 +14,5 @@ public class BoardResponseDto {
         this.boardName = board.getBoardName();
         this.description = board.getDescription();
     }
+
 }

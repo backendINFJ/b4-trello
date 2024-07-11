@@ -1,5 +1,6 @@
 package com.nbcamp.b4trello.entity;
 
+import com.nbcamp.b4trello.dto.BoardRequestDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -37,5 +38,10 @@ public class Board {
     public Board(String boardName, String description) {
         this.boardName = boardName;
         this.description = description;
+    }
+
+    public void update(BoardRequestDto requestDTO) {
+        this.boardName = requestDTO.getBoardName();
+        this.description = requestDTO.getDescription();
     }
 }

@@ -9,6 +9,7 @@ import com.nbcamp.b4trello.entity.UserBoard;
 import com.nbcamp.b4trello.entity.UserType;
 import com.nbcamp.b4trello.repository.BoardRepository;
 import com.nbcamp.b4trello.repository.UserBoardRepository;
+import com.nbcamp.b4trello.repository.UserRepository;
 import com.nbcamp.b4trello.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,50 +24,36 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final UserBoardRepository userBoardRepository;
+    private final UserRepository userRepository;
 
     /**
      * 보드 생성 메서드
      *
-     * @param userDetails 로그인한 사용자의 정보를 담고 있는 {@link UserDetails} 객체
-     * @param requestDto  보드 생성 요청 데이터를 담고 있는 {@link BoardRequestDto} 객체
-     * 이 객체는 보드의 필수 데이터 이름(boardName)과 설명(description)을 포함
-     *
-     * @return 생성된 보드의 정보를 담고 있는 {@link BoardResponseDto} 객체를 반환
-     * 이 객체는 생성된 보드의 ID(boardId), 이름(boardName), 설명(description) 등의 정보를 포함
+     * @param userBoard 유저의 권한을 담고있는 객체
+     * @param requestDto  보드 생성 요청 데이터를 담고 있는 객체
+     * @return 권한이 있는경우 보드를 생성, 없는 경우 RuntimeException 발생
      */
 
-    public BoardResponseDto createBoard(UserDetailsImpl userDetails, BoardRequestDto requestDto) {
-        User user = userDetails.getUser();
-
-        if (user.getUserType() != UserType.MANAGER) { // 권한 체크  -> 리랙토링 요소
-            // Manager만 보드 생성 가능 (?) -> 리팩토링 요소
+    @Transactional
+    public BoardResponseDto createBoard(BoardRequestDto requestDto, UserBoard userBoard) {
+        if (userBoard.getUserType() == UserType.MANAGER) {
+            Board board = Board.builder()
+                    .boardName(requestDto.getBoardName())
+                    .description(requestDto.getDescription())
+                    .build();
+            boardRepository.save(board);
+            return new BoardResponseDto(board);
+        } else {
             throw new RuntimeException(ErrorMessageEnum.BOARD_NOT_UNAUTHORIZED.getMessage());
         }
-
-        Board board = Board.builder()
-                .boardName(requestDto.getBoardName())
-                .description(requestDto.getDescription())
-                .build();
-
-        Board savedBoard = boardRepository.save(board);
-
-        UserBoard userBoard = UserBoard.builder()
-                .user(user)
-                .board(savedBoard)
-                .userType(UserType.MANAGER)
-                .build();
-
-        userBoardRepository.save(userBoard);
-
-        return new BoardResponseDto(savedBoard);
     }
+
 
     /**
      * 유저가 생성한 모든 보드 조회
      *
-     * @param  user Board를 조회할 User 객체
+     * @param user Board를 조회할 User 객체
      * @return User의 Board정보를 BoardResponseDto로 변환한 List 반환
-     *
      */
 
     @Transactional(readOnly = true)
@@ -75,4 +61,39 @@ public class BoardService {
         List<Board> boards = boardRepository.findAllByUser(user);
         return boards.stream().map(BoardResponseDto::new).toList();
     }
+
+    /**
+     * 보드 수정 메서드
+     *
+     * @param boardId 수정할 보드의 ID
+     * @param requestDto 수정할 객체
+     * @param userBoard 유저 정보 객체
+     * @return 수정된 보드를 BoardResponse 반환
+     * @throws RuntimeException 수정 권한이 없거나, 보드가 존재하지 않는 경우 예외 발생
+     */
+
+    @Transactional
+    public BoardResponseDto updateBoard(Long boardId, BoardRequestDto requestDto, UserBoard userBoard) {
+        Board board = findById(boardId);
+
+        User user = userBoard.getUser();
+        if (user == null) {
+            throw new RuntimeException(ErrorMessageEnum.USER_NOT_FOUND.getMessage());
+        }
+
+        if (!userBoard.getUserType().equals(UserType.MANAGER)) {
+            throw new RuntimeException("수정할 권한이 없습니다.");
+        }
+
+        board.update(requestDto);
+        boardRepository.save(board);
+        return new BoardResponseDto(board);
+    }
+
+
+    @Transactional(readOnly = true)
+    public Board findById(Long boardId) {
+        return boardRepository.findById(boardId).orElseThrow(() -> new RuntimeException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage()));
+    }
 }
+
