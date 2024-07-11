@@ -86,4 +86,22 @@ public class CardService {
 
 		return new CardResponseDto(card);
 	}
+
+	/**
+	 * 카드 삭제
+	 * @param cardId
+	 * @param columnId
+	 * @param user
+	 */
+	public void deleteCard(long cardId, long columnId, User user) {
+		Column column = columnRepository.findById(columnId).orElseThrow();
+
+		Card card = cardRepository.findById(cardId).orElseThrow(
+			() -> new IllegalArgumentException(ErrorMessageEnum.CARD_NOT_FOUND.getMessage()));
+
+		if (!card.getUser().equals(user)) {
+			throw new IllegalArgumentException(ErrorMessageEnum.MISMATCH_USER.getMessage());
+		}
+		cardRepository.delete(card);
+	}
 }

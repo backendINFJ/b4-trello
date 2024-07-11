@@ -2,13 +2,13 @@ package com.nbcamp.b4trello.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nbcamp.b4trello.dto.CardRequestDto;
@@ -101,5 +101,27 @@ public class CardController {
 		return ResponseEntity.ok(
 			new CommonResponse<CardResponseDto>(
 				ResponseEnum.GET_CARD, responseDto));
+	}
+
+	/**
+	 * 본인 확인 + 컬럼 확인 후 삭제
+	 * @param cardId
+	 * @param columnId
+	 * @param userDetails
+	 * @return
+	 */
+	@DeleteMapping("/{cardId}")
+	public ResponseEntity<CommonResponse<CardResponseDto>> deleteCard(
+		@PathVariable long cardId,
+		@PathVariable long columnId,
+		@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+		cardService.deleteCard(cardId, columnId, userDetails.getUser());
+
+		return ResponseEntity.ok(
+			new CommonResponse<>(
+				ResponseEnum.DELETE_CARD, null
+			)
+		);
 	}
 }
