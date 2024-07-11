@@ -13,6 +13,10 @@ import com.nbcamp.b4trello.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +26,7 @@ public class BoardService {
     private final UserBoardRepository userBoardRepository;
 
     /**
-     * 보드 생성 메서드입니다.
+     * 보드 생성 메서드
      *
      * @param userDetails 로그인한 사용자의 정보를 담고 있는 {@link UserDetails} 객체
      * @param requestDto  보드 생성 요청 데이터를 담고 있는 {@link BoardRequestDto} 객체
@@ -56,5 +60,19 @@ public class BoardService {
         userBoardRepository.save(userBoard);
 
         return new BoardResponseDto(savedBoard);
+    }
+
+    /**
+     * 유저가 생성한 모든 보드 조회
+     *
+     * @param  user Board를 조회할 User 객체
+     * @return User의 Board정보를 BoardResponseDto로 변환한 List 반환
+     *
+     */
+
+    @Transactional(readOnly = true)
+    public List<BoardResponseDto> getAllBoards(User user) {
+        List<Board> boards = boardRepository.findAllByUser(user);
+        return boards.stream().map(BoardResponseDto::new).toList();
     }
 }

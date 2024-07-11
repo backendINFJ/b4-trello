@@ -15,6 +15,7 @@ public enum ErrorMessageEnum {
 	BOARD_NOT_DATA("보드 생성에 필요한 필수 데이터가 없습니다."),  // entity에서 예외처리 고민중 -> @NotBlank
 	BOARD_NOT_UNAUTHORIZED("권한에 맞지않는 사용자 입니다."),
 
+
 	//column error
 
 	//card error

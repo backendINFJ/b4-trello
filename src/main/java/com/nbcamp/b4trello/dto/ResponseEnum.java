@@ -10,7 +10,8 @@ import lombok.Getter;
 public enum ResponseEnum {
 
 	CREATE_CARD("카드 생성 완료", HttpStatus.CREATED),
-	CREATE_BOARD("보드 생성 완료", HttpStatus.CREATED);
+	CREATE_BOARD("보드 생성 완료", HttpStatus.CREATED),
+	READ_BOARD("보드 전체조회 성공",HttpStatus.OK);
 
 	private final String message;
 	private final HttpStatus httpStatus;

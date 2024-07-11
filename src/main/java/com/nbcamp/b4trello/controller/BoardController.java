@@ -11,9 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController("/boards")
 @RequiredArgsConstructor
@@ -26,7 +29,7 @@ public class BoardController {
      *
      * @param userDetails 로그인한 사용자의 정보
      * @param boardRequestDto 보드생성 요청 데이터
-     * @return ResponseEntity<CommonResponse<BoardResponseDto>> 반환
+     * @return 201 OK,"보드 생성 완료" 보드 생성
      */
     @PostMapping()
     public ResponseEntity<CommonResponse<BoardResponseDto>> createBoard(
@@ -34,11 +37,32 @@ public class BoardController {
 
         BoardResponseDto boardresponseDto = boardService.createBoard(userDetails, boardRequestDto);
         CommonResponse<BoardResponseDto> response = CommonResponse.<BoardResponseDto>builder()
-                .statusCode(ResponseEnum.CREATE_BOARD.getHttpStatus())
+                .statusCode(HttpStatus.CREATED)
                 .message(ResponseEnum.CREATE_BOARD.getMessage())
                 .data(boardresponseDto)
                 .build();
 
         return ResponseEntity.status(ResponseEnum.CREATE_BOARD.getHttpStatus()).body(response);
+    }
+
+    /**
+     * 보드 전체조회
+     *
+     * @param userDetails 로그인한 사용자의 정보
+     * @return 200 OK, "보드 전체조회 성공", 보드 전체목록 반환
+     */
+
+    @GetMapping
+    public ResponseEntity<CommonResponse<List<BoardResponseDto>>> getBoards
+            (@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        List<BoardResponseDto> boardList = boardService.getAllBoards(userDetails.getUser());
+        CommonResponse<List<BoardResponseDto>> response = CommonResponse.<List<BoardResponseDto>>builder()
+                .statusCode(HttpStatus.OK)  // 제거해도 될듯한 코드 중복이긴하나 가독성(?)을 위해 남겨둠
+                .message(ResponseEnum.READ_BOARD.getMessage())
+                .data(boardList)
+                .build();
+
+        return ResponseEntity.status(ResponseEnum.READ_BOARD.getHttpStatus()).body(response);
     }
 }
