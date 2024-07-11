@@ -25,7 +25,7 @@ public class BoardController {
     /**
      * 보드 생성
      *
-     * @param userBoard 사용자의 정보
+     * @param userBoard       사용자의 정보
      * @param boardRequestDto 보드생성 요청 데이터
      * @return 201 OK,"보드 생성 완료" 보드 생성
      */
@@ -52,7 +52,7 @@ public class BoardController {
 
     @GetMapping
     public ResponseEntity<CommonResponse<List<BoardResponseDto>>> getBoards
-            (@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    (@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         List<BoardResponseDto> boardList = boardService.getAllBoards(userDetails.getUser());
         CommonResponse<List<BoardResponseDto>> response = CommonResponse.<List<BoardResponseDto>>builder()
@@ -64,11 +64,18 @@ public class BoardController {
         return ResponseEntity.status(ResponseEnum.READ_BOARD.getHttpStatus()).body(response);
     }
 
+    /**
+     * 보드 수정 메서드
+     *
+     * @param userDetails 유저정보, 수정할 보드의 id, 수정할 보드의 정보
+     * @return 200 OK, "보드 수정 성공", 수정된 보드 반환
+     */
+
     @PatchMapping("/{boardId}")
     public ResponseEntity<CommonResponse<BoardResponseDto>> updateBoard(
             @AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long boardId, @Valid @RequestBody BoardRequestDto boardRequestDto) {
 
-        BoardResponseDto boardResponseDto = boardService.updateBoard(userDetails, boardId, boardRequestDto);
+        BoardResponseDto boardResponseDto = boardService.updateBoard(boardId, boardRequestDto, userDetails.getUser();
         CommonResponse<BoardResponseDto> response = CommonResponse.<BoardResponseDto>builder()
                 .statusCode(HttpStatus.OK)
                 .message(ResponseEnum.UPDATE_BOARD.getMessage())
@@ -76,5 +83,23 @@ public class BoardController {
                 .build();
 
         return ResponseEntity.status(ResponseEnum.UPDATE_BOARD.getHttpStatus()).body(response);
+    }
+
+    /**
+     * @param boardId,userBoard를 통해 권한,보드 아이디 확인
+     * @return200 OK, "보드 삭제 성공", 보드의 모든 데이터 삭제
+     */
+
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<CommonResponse<String>> deleteBoard(
+            @AuthenticationPrincipal UserBoard userBoard, @PathVariable Long boardId) {
+        boardService.deleteBoard(boardId, userBoard);
+        CommonResponse<String> response = CommonResponse.<String>builder()
+                .statusCode(HttpStatus.OK)
+                .message(ResponseEnum.DELETE_BOARD.getMessage())
+                .data(null) // null값 허용x -> 그냥 .data 자체 삭제
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

@@ -90,6 +90,24 @@ public class BoardService {
         return new BoardResponseDto(board);
     }
 
+    /**
+     *
+     * @param boardId, userBoard를 통해 삭제 권한, 보드 아이디 확인
+     * @return 확인된 정보를 통해 보드 삭제
+     */
+
+    @Transactional
+    public void deleteBoard(Long boardId, UserBoard userBoard) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new RuntimeException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage()));
+
+        if (!userBoard.getUserType().equals(UserType.MANAGER)) {
+            throw new RuntimeException("삭제할 권한이 없습니다.");
+        }
+
+        boardRepository.delete(board);
+    }
+
 
     @Transactional(readOnly = true)
     public Board findById(Long boardId) {
