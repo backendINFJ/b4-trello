@@ -9,7 +9,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ResponseEnum {
 
-	CREATE_CARD("카드 생성 완료", HttpStatus.CREATED);
+	CREATE_CARD("카드 생성 완료", HttpStatus.CREATED),
+	CREATE_BOARD("보드 생성 완료", HttpStatus.CREATED);
 
 	private final String message;
 	private final HttpStatus httpStatus;
