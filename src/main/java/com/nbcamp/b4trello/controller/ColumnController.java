@@ -1,5 +1,6 @@
 package com.nbcamp.b4trello.controller;
 
+import com.nbcamp.b4trello.dto.ColumnResponseDto;
 import com.nbcamp.b4trello.entity.Column;
 import com.nbcamp.b4trello.service.ColumnService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +17,8 @@ public class ColumnController {
     private ColumnService columnService;
 
     @GetMapping
-    public ResponseEntity<List<ColumnResponse>> getColumns(@RequestParam Long boardId) {
+    public ResponseEntity<List<ColumnResponseDto>> getColumns(@RequestParam Long boardId) {
         List<Column> columns = columnService.getColumns(boardId);
-        return ResponseEntity.ok(columns.stream().map(ColumnResponse::new).toList());
+        return ResponseEntity.ok(columns.stream().map(ColumnResponseDto::new).toList());
     }
 }
