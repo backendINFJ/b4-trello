@@ -1,5 +1,6 @@
 package com.nbcamp.b4trello.service;
 
+import com.nbcamp.b4trello.dto.ErrorMessageEnum;
 import com.nbcamp.b4trello.dto.TokenDTO;
 import com.nbcamp.b4trello.entity.RefreshToken;
 import com.nbcamp.b4trello.jwt.JwtEnum;
@@ -39,7 +40,7 @@ public class AuthService implements LogoutHandler {
     public TokenDTO reissue(String refreshToken) {
         Optional<RefreshToken> token = refreshTokenRepository.findByToken(refreshToken);
         if(token!=null && !token.get().getRefreshToken().equals(refreshToken)){
-            throw new RuntimeException("잘못된 토큰입니다.");
+            throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.AUTH_BAD_TOKEN));
         }
         Authentication authentication = jwtUtil.getAuthentication(refreshToken.substring(7));
         TokenDTO tokenDto = jwtUtil.createToken(authentication);
@@ -59,13 +60,13 @@ public class AuthService implements LogoutHandler {
         String authHeader = request.getHeader(JwtEnum.ACCESS_TOKEN.getValue());
 
         if (authHeader == null && !authHeader.startsWith(JwtEnum.GRANT_TYPE.getValue())) {
-            throw new RuntimeException("알수 없는 access token.");
+            throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.AUTH_BAD_ACCESS));
         }
         String accessToken = authHeader.substring(7);
         String username = jwtUtil.getUsername(accessToken);
         RefreshToken refreshToken = refreshTokenRepository.findByToken(username).orElse(null);
         if(refreshToken == null) {
-            throw new RuntimeException("잘못된 토큰");
+            throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.AUTH_BAD_TOKEN));
         }
         refreshTokenRepository.delete(refreshToken);
     }

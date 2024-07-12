@@ -1,18 +1,18 @@
 package com.nbcamp.b4trello.controller;
 
+import com.nbcamp.b4trello.dto.CommonResponse;
+import com.nbcamp.b4trello.dto.ResponseEnum;
 import com.nbcamp.b4trello.dto.UserRequestDTO;
-import com.nbcamp.b4trello.dto.UserUpdateDTO;
+import com.nbcamp.b4trello.dto.UserResponseDTO;
+import com.nbcamp.b4trello.dto.UserUpdateRequestDTO;
+import com.nbcamp.b4trello.dto.UserUpdateResponseDTO;
 import com.nbcamp.b4trello.security.UserDetailsImpl;
 import com.nbcamp.b4trello.service.UserService;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,8 +32,12 @@ public class UserController {
      * @param userDto
      */
     @PostMapping("/")
-    public ResponseEntity<String> createUser(@Valid @RequestBody UserRequestDTO userDto) {
-        return userService.createUser(userDto);
+    public ResponseEntity<CommonResponse<UserResponseDTO>> createUser(@Valid @RequestBody UserRequestDTO userDto) {
+        UserResponseDTO userResponseDTO = userService.createUser(userDto);
+        CommonResponse<UserResponseDTO> response = CommonResponse.<UserResponseDTO>builder()
+                .status(ResponseEnum.CREATE_USER)
+                .data(userResponseDTO).build();
+        return ResponseEntity.status(ResponseEnum.CREATE_USER.getHttpStatus()).body(response);
     }
     /**
      * 유저 수정
@@ -41,9 +45,14 @@ public class UserController {
      * @param userDetails
      */
     @PatchMapping("/{userId}")
-    public ResponseEntity<String> updateUser(@PathVariable("userId") Long userId, @Valid @RequestBody UserUpdateDTO updateDTO, @AuthenticationPrincipal
+    public ResponseEntity<CommonResponse<UserUpdateResponseDTO>> updateUser(@PathVariable("userId") Long userId, @Valid @RequestBody UserUpdateRequestDTO updateDTO, @AuthenticationPrincipal
     UserDetailsImpl userDetails) {
-        return userService.updateUser(userId, updateDTO, userDetails.getUser());
+        UserUpdateResponseDTO userUpdateDTO = userService.updateUser(userId, updateDTO, userDetails.getUser());
+
+        CommonResponse<UserUpdateResponseDTO> response = CommonResponse.<UserUpdateResponseDTO>builder()
+                .status(ResponseEnum.UPDATE_USER)
+                .data(userUpdateDTO).build();
+        return ResponseEntity.status(ResponseEnum.UPDATE_USER.getHttpStatus()).body(response);
     }
     /**
      * 유저 삭제
