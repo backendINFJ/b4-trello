@@ -33,7 +33,7 @@ public class AuthService implements LogoutHandler {
     /**
      * 토큰 재발급 메서드
      * @param refreshToken
-     * @return
+     * @return tokenDto
      */
     @Transactional
     public TokenDTO reissue(String refreshToken) {

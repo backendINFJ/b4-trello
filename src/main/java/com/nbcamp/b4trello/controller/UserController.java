@@ -27,18 +27,29 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
-
+    /**
+     * 유저 생성
+     * @param userDto
+     */
     @PostMapping("/")
     public ResponseEntity<String> createUser(@Valid @RequestBody UserRequestDTO userDto) {
         return userService.createUser(userDto);
     }
-
+    /**
+     * 유저 수정
+     * @param userId
+     * @param userDetails
+     */
     @PatchMapping("/{userId}")
     public ResponseEntity<String> updateUser(@PathVariable("userId") Long userId, @Valid @RequestBody UserUpdateDTO updateDTO, @AuthenticationPrincipal
     UserDetailsImpl userDetails) {
         return userService.updateUser(userId, updateDTO, userDetails.getUser());
     }
-
+    /**
+     * 유저 삭제
+     * @param userId
+     * @param userDetails
+     */
     @PostMapping("/delete/{userId}")
     public ResponseEntity<String> deleteUser(@PathVariable("userId") Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return userService.deleteUser(userId, userDetails.getUser());

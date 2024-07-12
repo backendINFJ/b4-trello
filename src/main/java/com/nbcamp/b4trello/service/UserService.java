@@ -19,7 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
-
+    /**
+     * 유저 생성 메서드
+     * @param userDto
+     * @return 완료 메시지
+     */
     @Transactional
     public ResponseEntity<String> createUser(UserRequestDTO userDto) {
 
@@ -35,7 +39,13 @@ public class UserService {
         return ResponseEntity.status(HttpStatus.OK).body("가입 완료");
     }
 
-
+    /**
+     * 유저 업데이트 메서드
+     * @param userId
+     * @param updateDTO
+     * @param user
+     * @return 완료 메시지
+     */
     @Transactional
     public ResponseEntity<String> updateUser(Long userId, UserUpdateDTO updateDTO, User user) {
 
@@ -61,7 +71,12 @@ public class UserService {
         return ResponseEntity.status(HttpStatus.OK).body("수정완료");
     }
 
-
+    /**
+     * 유저 탈퇴 메서드
+     * @param userId
+     * @param user
+     * @return 완료 메시지
+     */
     public ResponseEntity<String> deleteUser(Long userId, User user) {
 
         Optional<User> originUser = userRepository.findById(userId);
