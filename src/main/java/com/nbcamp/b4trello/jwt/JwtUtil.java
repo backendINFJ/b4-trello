@@ -44,7 +44,7 @@ public class JwtUtil {
 
         String accessToken = JwtEnum.GRANT_TYPE.getValue() +
                 Jwts.builder()
-                        .setSubject("엑세스") // subject 설정
+                        .setSubject(JwtEnum.ACCESS_TOKEN.getValue()) // subject 설정
                         .claim(authentication.getName(),
                                 authentication.getAuthorities()) // 사용자 식별자값(ID)
                         .setExpiration(new Date(now + TOKEN_TIME)) // 만료 시간
@@ -55,7 +55,7 @@ public class JwtUtil {
 
         String refreshToken = JwtEnum.GRANT_TYPE.getValue() +
                 Jwts.builder()
-                        .setSubject("리프레시")
+                        .setSubject(JwtEnum.REFRESH_TOKEN.getValue())
                         .claim(authentication.getName(), authentication.getAuthorities())
                         .setExpiration(new Date(now + REFRESH_TOKEN_TIME))
                         .setIssuedAt(new Date(now))

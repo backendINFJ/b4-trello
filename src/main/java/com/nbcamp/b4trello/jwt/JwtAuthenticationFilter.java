@@ -2,9 +2,11 @@ package com.nbcamp.b4trello.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nbcamp.b4trello.dto.AuthRequestDTO;
+import com.nbcamp.b4trello.dto.ErrorMessageEnum;
 import com.nbcamp.b4trello.dto.TokenDTO;
 import com.nbcamp.b4trello.entity.RefreshToken;
 import com.nbcamp.b4trello.entity.User;
+import com.nbcamp.b4trello.enums.StatusEnum;
 import com.nbcamp.b4trello.repository.RefreshTokenRepository;
 import com.nbcamp.b4trello.repository.UserRepository;
 import com.nbcamp.b4trello.security.UserDetailsImpl;
@@ -56,14 +58,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
             Optional<User> user = userRepository.findByUsername(authRequestDTO.getUsername());
             if(null != user) {
-                if(user.get().getStatus() == "DENIED"){
-                    log.info("삭제된 사용자입니다");
-                    throw new IllegalArgumentException("삭제된 사용자입니다.");
+                if(user.get().getStatus() == StatusEnum.DENIED){
+                    throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.USER_DENIND));
                 }
             }
             if (!bCryptPasswordEncoder.matches(authRequestDTO.getPassword(),user.get().getPassword())) {
-                log.info("잘못된 비밀번호입니다.");
-                throw new IllegalArgumentException("잘못된 비밀번호입니다.");
+                throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.PASSWORD_BAD_REQUEST));
             }
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     authRequestDTO.getUsername(),authRequestDTO.getPassword());
@@ -77,7 +77,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        log.info("로그인 성공 및 JWT 생성");
         UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
         TokenDTO jwtToken = jwtUtil.createToken(authResult);
         RefreshToken refreshToken = RefreshToken.builder()
@@ -95,10 +94,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        log.info("로그인 실패");
         response.setStatus(401);
-
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("로그인에 실패하였습니다");
+        response.getWriter().write(ErrorMessageEnum.LOGIN_FAILED.getMessage());
     }
 }

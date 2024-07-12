@@ -16,6 +16,8 @@ public enum ErrorMessageEnum {
 	//auth error
 	AUTH_BAD_TOKEN("잘못된 토큰입니다."),
 	AUTH_BAD_ACCESS("잘못된 엑세스 토큰입니다."),
+	LOGIN_FAILED("로그인 실패"),
+	PASSWORD_BAD_REQUEST("잘못된 비밀번호입니다."),
 	//board error
 
 	//column error
