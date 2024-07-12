@@ -4,17 +4,16 @@ import org.springframework.http.HttpStatus;
 
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 @Getter
 @Builder
 public class CommonResponse<T> {
-	private HttpStatus statusCode;
-	private String message;
+	private ResponseEnum status;
 	private T data;
 
 	public CommonResponse(ResponseEnum responseEnum, T data) {
-		statusCode = responseEnum.getHttpStatus();
-		message = responseEnum.getMessage();
+		this.status = responseEnum;
 		this.data = data;
 	}
 }
