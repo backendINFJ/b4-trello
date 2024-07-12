@@ -54,8 +54,8 @@ public class BoardController {
      */
 
     @GetMapping
-    public ResponseEntity<CommonResponse<List<BoardResponseDto>>> getBoards
-    (@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<CommonResponse<List<BoardResponseDto>>> getBoards(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         List<BoardResponseDto> boardList = boardService.getAllBoards(userDetails.getUser());
         CommonResponse<List<BoardResponseDto>> response = CommonResponse.<List<BoardResponseDto>>builder()
