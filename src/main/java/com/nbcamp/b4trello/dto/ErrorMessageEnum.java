@@ -13,7 +13,8 @@ public enum ErrorMessageEnum {
 
 	//column error
 	COLUMN_NOT_FOUND("컬럼을 찾을 수 없습니다."),
-	COLUMN_ALREADY_EXISTS("이미 존재하는 컬럼 제목입니다.");
+	COLUMN_ALREADY_EXISTS("이미 존재하는 컬럼 제목입니다."),
+	COLUMN_NOT_SEQUENCE("잘못된 컬럼 순서입니다.");
 
 	//card error
 //	CARD_NOT_FOUND("카드를 찾을 수 없습니다.");

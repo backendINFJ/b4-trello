@@ -34,4 +34,10 @@ public class ColumnController {
         columnService.deleteColumn(columnId);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/sequence")
+    public ResponseEntity<Void> updateColumnSequence(@RequestParam Long boardId, @RequestBody ColumnRequestDto request) {
+        columnService.updateColumnSequence(boardId, request.getColumnId());
+        return ResponseEntity.ok().build();
+    }
 }

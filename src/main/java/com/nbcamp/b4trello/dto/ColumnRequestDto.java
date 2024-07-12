@@ -1,5 +1,8 @@
 package com.nbcamp.b4trello.dto;
 
+import java.util.Collections;
+import java.util.List;
+
 public class ColumnRequestDto {
         private Long boardId;
         private Long columnId;
@@ -9,12 +12,16 @@ public class ColumnRequestDto {
             return boardId;
         }
 
-        public Long getColumnId() {
-            return columnId;
-        }
-
         public void setBoardId(Long boardId) {
             this.boardId = boardId;
+        }
+
+        public List<Long> getColumnId() {
+            return Collections.singletonList(columnId);
+        }
+
+        public void setColumnIds(Long columnId) {
+            this.columnId = columnId;
         }
 
         public String getColumnTitle() {

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ColumnService {
@@ -42,7 +43,20 @@ public class ColumnService {
     }
 
     public void deleteColumn(Long columnId) {
-        Column column = columnRepository.findById(columnId).orElseThrow(() -> new IllegalArgumentException("Column not found"));
+        Column column = columnRepository.findById(columnId).orElseThrow(() -> new IllegalArgumentException(ErrorMessageEnum.COLUMN_NOT_FOUND.getMessage()));
         columnRepository.delete(column);
+    }
+
+    public void updateColumnSequence(Long boardId, List<Long> columnIds) {
+        List<Column> columns = columnRepository.findByBoardIdOrderByColumnSequenceAsc(boardId);
+        for (int i = 0; i < columnIds.size(); i++) {
+            final Long columnId = columnIds.get(i);
+            Column column = columns.stream()
+                    .filter(c -> c.getColumnId().equals(columnId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(ErrorMessageEnum.COLUMN_NOT_SEQUENCE.getMessage()));
+            column.setColumnSequence(i + 1);
+            columnRepository.save(column);
+        }
     }
 }
