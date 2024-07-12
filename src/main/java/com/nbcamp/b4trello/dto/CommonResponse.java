@@ -1,7 +1,6 @@
 package com.nbcamp.b4trello.dto;
 
 import org.springframework.http.HttpStatus;
-
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,8 +12,8 @@ public class CommonResponse<T> {
 	private T data;
 
 	public CommonResponse(ResponseEnum responseEnum, T data) {
-		statusCode = responseEnum.getHttpStatus();
-		message = responseEnum.getMessage();
+		this.statusCode = responseEnum.getHttpStatus();
+		this.message = responseEnum.getMessage();
 		this.data = data;
 	}
 }

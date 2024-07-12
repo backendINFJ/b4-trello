@@ -22,17 +22,20 @@ public class ColumnService {
     private BoardRepository boardRepository;
 
     public List<Column> getColumns(Long boardId) {
+        if (!boardRepository.existsById(boardId)) {
+            throw new IllegalArgumentException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage());
+        }
         return columnRepository.findByBoardIdOrderByColumnSequenceAsc(boardId);
     }
 
     public Column createColumn(Long boardId, String columnTitle) {
         if (!boardRepository.existsById(boardId)) {
-            throw new IllegalArgumentException(ErrorMessageEnum.COLUMN_NOT_FOUND.getMessage());
+            throw new IllegalArgumentException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage());
         }
         if (columnRepository.existsByBoardIdAndColumnTitle(boardId, columnTitle)) {
-            throw new IllegalArgumentException(ErrorMessageEnum.COLUMN_ALREADY_EXISTS.getMessage());
+            throw new IllegalArgumentException(ErrorMessageEnum.COLUMN_TITLE_ALREADY_EXISTS.getMessage());
         }
-        Board board = boardRepository.findById(boardId).orElseThrow(() -> new IllegalArgumentException(ErrorMessageEnum.COLUMN_NOT_FOUND.getMessage()));
+        Board board = boardRepository.findById(boardId).orElseThrow(() -> new IllegalArgumentException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage()));
         int columnSequence = columnRepository.findByBoardIdOrderByColumnSequenceAsc(boardId).size() + 1;
         Column column = new Column();
         column.setBoard(board);
@@ -43,18 +46,25 @@ public class ColumnService {
     }
 
     public void deleteColumn(Long columnId) {
-        Column column = columnRepository.findById(columnId).orElseThrow(() -> new IllegalArgumentException(ErrorMessageEnum.COLUMN_NOT_FOUND.getMessage()));
+        Column column = columnRepository.findById(columnId)
+                .orElseThrow(() -> new IllegalArgumentException(ErrorMessageEnum.COLUMN_NOT_FOUND.getMessage()));
         columnRepository.delete(column);
     }
 
     public void updateColumnSequence(Long boardId, List<Long> columnIds) {
+        if (!boardRepository.existsById(boardId)) {
+            throw new IllegalArgumentException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage());
+        }
         List<Column> columns = columnRepository.findByBoardIdOrderByColumnSequenceAsc(boardId);
+        if (columns.size() != columnIds.size()) {
+            throw new IllegalArgumentException(ErrorMessageEnum.COLUMN_SEQUENCE_MISMATCH.getMessage());
+        }
         for (int i = 0; i < columnIds.size(); i++) {
-            final Long columnId = columnIds.get(i);
+            final Long currentColumnId = columnIds.get(i);
             Column column = columns.stream()
-                    .filter(c -> c.getColumnId().equals(columnId))
+                    .filter(c -> c.getColumnId().equals(currentColumnId))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException(ErrorMessageEnum.COLUMN_NOT_SEQUENCE.getMessage()));
+                    .orElseThrow(() -> new IllegalArgumentException(ErrorMessageEnum.COLUMN_NOT_FOUND.getMessage()));
             column.setColumnSequence(i + 1);
             columnRepository.save(column);
         }
