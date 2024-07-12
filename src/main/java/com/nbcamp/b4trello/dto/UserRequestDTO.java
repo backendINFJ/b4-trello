@@ -4,12 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+
 
 @Data
-@Setter
-@Getter
 public class UserRequestDTO {
     @NotBlank(message = "필수로 입력해야됩니다.")
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[0-9])[a-z0-9]{4,10}$" , message = "아이디는 최소 4자, 최대 10자입니다.")

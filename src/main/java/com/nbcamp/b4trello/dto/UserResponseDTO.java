@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Data
-@Getter
-@Setter
 public class UserResponseDTO {
     private String username;
 
