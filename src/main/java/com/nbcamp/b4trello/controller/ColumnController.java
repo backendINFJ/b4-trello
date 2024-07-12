@@ -28,4 +28,10 @@ public class ColumnController {
         Column column = columnService.createColumn(request.getBoardId(), request.getColumnTitle());
         return ResponseEntity.ok(new ColumnResponseDto(column));
     }
+
+    @DeleteMapping("/{columnId}")
+    public ResponseEntity<Void> deleteColumn(@PathVariable Long columnId) {
+        columnService.deleteColumn(columnId);
+        return ResponseEntity.noContent().build();
+    }
 }

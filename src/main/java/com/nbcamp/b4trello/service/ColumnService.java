@@ -40,4 +40,9 @@ public class ColumnService {
         column.setColumnSequence(columnSequence);
         return columnRepository.save(column);
     }
+
+    public void deleteColumn(Long columnId) {
+        Column column = columnRepository.findById(columnId).orElseThrow(() -> new IllegalArgumentException("Column not found"));
+        columnRepository.delete(column);
+    }
 }
