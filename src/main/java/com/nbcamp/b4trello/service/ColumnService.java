@@ -6,6 +6,10 @@ import com.nbcamp.b4trello.entity.Column;
 import com.nbcamp.b4trello.repository.BoardRepository;
 import com.nbcamp.b4trello.repository.ColumnRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +26,7 @@ public class ColumnService {
     private BoardRepository boardRepository;
 
     public List<Column> getColumns(Long boardId) {
+        checkAuthorization();
         if (!boardRepository.existsById(boardId)) {
             throw new IllegalArgumentException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage());
         }
@@ -29,6 +34,7 @@ public class ColumnService {
     }
 
     public Column createColumn(Long boardId, String columnTitle) {
+        checkAuthorization();
         if (!boardRepository.existsById(boardId)) {
             throw new IllegalArgumentException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage());
         }
@@ -46,12 +52,14 @@ public class ColumnService {
     }
 
     public void deleteColumn(Long columnId) {
+        checkAuthorization();
         Column column = columnRepository.findById(columnId)
                 .orElseThrow(() -> new IllegalArgumentException(ErrorMessageEnum.COLUMN_NOT_FOUND.getMessage()));
         columnRepository.delete(column);
     }
 
     public void updateColumnSequence(Long boardId, List<Long> columnIds) {
+        checkAuthorization();
         if (!boardRepository.existsById(boardId)) {
             throw new IllegalArgumentException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage());
         }
@@ -67,6 +75,13 @@ public class ColumnService {
                     .orElseThrow(() -> new IllegalArgumentException(ErrorMessageEnum.COLUMN_NOT_FOUND.getMessage()));
             column.setColumnSequence(i + 1);
             columnRepository.save(column);
+        }
+    }
+
+    private void checkAuthorization() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_MANAGER"))) {
+            throw new AccessDeniedException("접근이 거부되었습니다");
         }
     }
 }
