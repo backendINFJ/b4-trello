@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface ColumnRepository extends JpaRepository<Column, Long> {
     List<Column> findByBoardIdOrderByColumnSequenceAsc(Long boardId);
+    boolean existsByBoardIdAndColumnTitle(Long boardId, String columnTitle);
 }

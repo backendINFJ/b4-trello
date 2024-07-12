@@ -1,5 +1,6 @@
 package com.nbcamp.b4trello.controller;
 
+import com.nbcamp.b4trello.dto.ColumnRequestDto;
 import com.nbcamp.b4trello.dto.ColumnResponseDto;
 import com.nbcamp.b4trello.entity.Column;
 import com.nbcamp.b4trello.service.ColumnService;
@@ -20,5 +21,11 @@ public class ColumnController {
     public ResponseEntity<List<ColumnResponseDto>> getColumns(@RequestParam Long boardId) {
         List<Column> columns = columnService.getColumns(boardId);
         return ResponseEntity.ok(columns.stream().map(ColumnResponseDto::new).toList());
+    }
+
+    @PostMapping
+    public ResponseEntity<ColumnResponseDto> createColumn(@RequestBody ColumnRequestDto request) {
+        Column column = columnService.createColumn(request.getBoardId(), request.getColumnTitle());
+        return ResponseEntity.ok(new ColumnResponseDto(column));
     }
 }
