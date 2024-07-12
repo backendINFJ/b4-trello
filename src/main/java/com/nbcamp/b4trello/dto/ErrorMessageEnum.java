@@ -8,7 +8,8 @@ import lombok.Getter;
 public enum ErrorMessageEnum {
 
 	//user error
-
+	USER_NOT_FOUND("유저를 찾을수 없습니다."),
+	USER_DENIND("탈퇴한 유저입니다."),
 	//board error
 
 	//column error
