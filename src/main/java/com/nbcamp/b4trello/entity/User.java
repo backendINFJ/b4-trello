@@ -1,17 +1,16 @@
 package com.nbcamp.b4trello.entity;
 
-import com.nbcamp.b4trello.dto.UserRequestDTO;
+import com.nbcamp.b4trello.dto.UserUpdateDTO;
+import com.nbcamp.b4trello.enums.StatusEnum;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +21,7 @@ import lombok.Setter;
 @Entity(name = "users")
 @NoArgsConstructor
 @Table(name = "users")
-public class User {
+public class User extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -41,7 +40,7 @@ public class User {
 
     @Setter
     @Enumerated(EnumType.STRING)
-    private String status = "ACTIVE";
+    private StatusEnum status = StatusEnum.ACTIVE;
 
 
     @Builder
@@ -52,10 +51,13 @@ public class User {
         this.email = email;
     }
     // 프로필 저장
-    public void updateUser(UserRequestDTO userRequestDTO) {
-        this.username = userRequestDTO.getUsername();
-        this.password = userRequestDTO.getPassword();
-        this.nickname = userRequestDTO.getNickname();
-        this.email = userRequestDTO.getEmail();
+    public void updateUser(UserUpdateDTO updateDTO) {
+        this.nickname = updateDTO.getNickname();
+        this.password = updateDTO.getPassword();
+    }
+
+    public void deleteUser() {
+        this.status = StatusEnum.DENIED;
+        this.setDeletedAt();
     }
 }
