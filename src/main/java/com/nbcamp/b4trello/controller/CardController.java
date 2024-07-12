@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nbcamp.b4trello.dto.CardListResponseDto;
 import com.nbcamp.b4trello.dto.CardRequestDto;
 import com.nbcamp.b4trello.dto.CardResponseDto;
 import com.nbcamp.b4trello.dto.CardUpdateRequestDto;
@@ -80,9 +82,11 @@ public class CardController {
 
 		CardResponseDto responseDto =
 			cardService.updateCard(columnId, cardId, userDetails.getUser(), requestDto);
+
 		return ResponseEntity.ok(
-			new CommonResponse<CardResponseDto>(
-				ResponseEnum.GET_CARD, responseDto));
+			CommonResponse.<CardResponseDto>builder()
+				.responseEnum(ResponseEnum.GET_CARD)
+				.data(responseDto).build());
 	}
 
 	/**
@@ -123,5 +127,14 @@ public class CardController {
 				ResponseEnum.DELETE_CARD, null
 			)
 		);
+	}
+
+	@GetMapping
+	public ResponseEntity<CommonResponse<CardListResponseDto>> getCards(
+		@RequestParam String sortBy, @RequestParam long boardId,
+		@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+		cardService.getCardList(sortBy, boardId);
+
 	}
 }
