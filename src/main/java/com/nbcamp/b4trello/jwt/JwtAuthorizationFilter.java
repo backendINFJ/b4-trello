@@ -17,7 +17,7 @@ import org.springframework.web.filter.GenericFilterBean;
 @Slf4j(topic = "JWT 검증 및 인가")
 public class JwtAuthorizationFilter extends GenericFilterBean {
 
-    private final JwtUtil jwtUtil;
+    private final JwtProvider jwtUtil;
 
 
     /**

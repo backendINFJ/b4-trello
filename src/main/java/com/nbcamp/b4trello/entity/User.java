@@ -59,4 +59,7 @@ public class User extends Timestamped {
         this.status = StatusEnum.DENIED;
         this.setDeletedAt();
     }
+    public void verifiStatus(){
+        this.status = StatusEnum.VERYFICATION;
+    }
 }

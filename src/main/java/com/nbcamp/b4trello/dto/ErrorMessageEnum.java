@@ -21,6 +21,7 @@ public enum ErrorMessageEnum {
 	INVALID_TOKEN("검증되지 않은 토큰"),
 	EXPIRED_TOKEN("만료된 토큰"),
 	JWT_CLAIMS_EMPTY("토큰 정보가 없습니다."),
+	MAIL_BAD_REQUEST("잘못된 인증번호입니다."),
 	//board error
 
 	//column error

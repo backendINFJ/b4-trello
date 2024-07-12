@@ -4,7 +4,7 @@ import com.nbcamp.b4trello.exception.CustomAccessDeniedHandler;
 import com.nbcamp.b4trello.exception.CustomAuthenticationEntryPoint;
 import com.nbcamp.b4trello.jwt.JwtAuthenticationFilter;
 import com.nbcamp.b4trello.jwt.JwtAuthorizationFilter;
-import com.nbcamp.b4trello.jwt.JwtUtil;
+import com.nbcamp.b4trello.jwt.JwtProvider;
 import com.nbcamp.b4trello.repository.RefreshTokenRepository;
 import com.nbcamp.b4trello.repository.UserRepository;
 import com.nbcamp.b4trello.service.AuthService;
@@ -28,7 +28,7 @@ public class SecurityConfig {
     /**
      * SecurityConfig 필드값
      */
-    private final JwtUtil jwtUtil;
+    private final JwtProvider jwtUtil;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -37,7 +37,7 @@ public class SecurityConfig {
     /**
      * 생성자 매서드
      */
-    public SecurityConfig(JwtUtil jwtUtil,
+    public SecurityConfig(JwtProvider jwtUtil,
             AuthenticationConfiguration authenticationConfiguration, UserRepository userRepository, RefreshTokenRepository refreshTokenRepository) {
         this.jwtUtil = jwtUtil;
         this.authenticationConfiguration = authenticationConfiguration;

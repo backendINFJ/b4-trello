@@ -30,14 +30,14 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-    private final JwtUtil jwtUtil;
+    private final JwtProvider jwtUtil;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
 
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository, AuthenticationManager authenticationManager,
+    public JwtAuthenticationFilter(JwtProvider jwtUtil, UserRepository userRepository, AuthenticationManager authenticationManager,
             BCryptPasswordEncoder bCryptPasswordEncoder, RefreshTokenRepository refreshTokenRepository) {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;

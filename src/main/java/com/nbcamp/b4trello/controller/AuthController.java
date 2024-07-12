@@ -1,16 +1,19 @@
 package com.nbcamp.b4trello.controller;
 
+import com.nbcamp.b4trello.dto.KeyDto;
 import com.nbcamp.b4trello.dto.ResponseEnum;
 import com.nbcamp.b4trello.dto.TokenDTO;
 import com.nbcamp.b4trello.jwt.JwtEnum;
+import com.nbcamp.b4trello.security.UserDetailsImpl;
 import com.nbcamp.b4trello.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -56,5 +59,33 @@ public class AuthController {
         return ResponseEntity.status(ResponseEnum.USER_LOGOUT.getHttpStatus()).body(ResponseEnum.USER_LOGOUT.getMessage());
     }
 
+    /**
+     * 메일 전송 controller
+     *
+     * @param userDetails
+     * @return ok
+     */
+    @PostMapping("/send-mail")
+    public ResponseEntity<String> sendMail(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        authService.sendMail(userDetails.getUser().getEmail());
+        return ResponseEntity.status(ResponseEnum.SEND_MAIL.getHttpStatus()).body(ResponseEnum.SEND_MAIL.getMessage());
 
+
+    }
+
+    /**
+     * 이메일 인증 확인 controller
+     *
+     * @param key               인증 키
+     * @param userDetails 유저 이메일
+     * @return ok
+     */
+    @PostMapping("/check-mail")
+    public ResponseEntity<String> checkMail(@RequestBody KeyDto key,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        authService.checkMail(key.getKey(), userDetails.getUser().getEmail());
+        return ResponseEntity.status(ResponseEnum.ACCESS_MAIL.getHttpStatus()).body(ResponseEnum.ACCESS_MAIL.getMessage());
+
+    }
 }
