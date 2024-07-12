@@ -1,4 +1,7 @@
 package com.nbcamp.b4trello.repository;
 
-public class UserRepository {
+import com.nbcamp.b4trello.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UserRepository extends JpaRepository<User, Long> {
 }
