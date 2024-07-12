@@ -1,11 +1,9 @@
 package com.nbcamp.b4trello.dto;
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 
-@Data
+@Getter
 public class UserResponseDTO {
     private String username;
 

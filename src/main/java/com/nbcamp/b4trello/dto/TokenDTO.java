@@ -3,9 +3,12 @@ package com.nbcamp.b4trello.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Builder
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 public class TokenDTO {
 

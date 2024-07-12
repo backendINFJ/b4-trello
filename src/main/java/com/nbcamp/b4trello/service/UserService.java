@@ -32,7 +32,7 @@ public class UserService {
 
         Optional<User> checkUsername = userRepository.findByUsername(userDto.getUsername());
         if (checkUsername.isPresent()) {
-            throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.ALREADY_USER));
+            throw new IllegalArgumentException(ErrorMessageEnum.ALREADY_USER.getMessage());
         }
         User user = new User(
                 userDto.getUsername(), bCryptPasswordEncoder.encode(userDto.getPassword()),
@@ -53,10 +53,10 @@ public class UserService {
     public UserUpdateResponseDTO updateUser(Long userId, UserUpdateRequestDTO updateDTO, User user) {
 
             if(!user.getId().equals(userId)){
-                throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.PRIVATE_USER));
+                throw new IllegalArgumentException(ErrorMessageEnum.PRIVATE_USER.getMessage());
             }
             if(bCryptPasswordEncoder.matches(updateDTO.getPassword(),user.getPassword())){
-                throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.SAME_PASSWORD));
+                throw new IllegalArgumentException(ErrorMessageEnum.SAME_PASSWORD.getMessage());
             }
 
             UserUpdateRequestDTO updateUser = null;
@@ -68,7 +68,7 @@ public class UserService {
 
         Optional<User> originUser = userRepository.findById(userId);
         if (originUser.isEmpty()) {
-            throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.USER_NOT_FOUND));
+            throw new IllegalArgumentException(ErrorMessageEnum.USER_NOT_FOUND.getMessage());
         }
         originUser.get().updateUser(updateUser);
         return UserUpdateResponseDTO.builder().nickname(originUser.get().getNickname()).build();
@@ -84,11 +84,11 @@ public class UserService {
 
         Optional<User> originUser = userRepository.findById(userId);
         if (originUser.isEmpty() || originUser.get().getStatus().equals(StatusEnum.DENIED)) {
-            throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.USER_NOT_FOUND));
+            throw new IllegalArgumentException(ErrorMessageEnum.USER_NOT_FOUND.getMessage());
         }
 
         if(!validateUser(user.getId(), originUser.get().getId())){
-            throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.PRIVATE_USER));
+            throw new IllegalArgumentException(ErrorMessageEnum.PRIVATE_USER.getMessage());
         }
 
 

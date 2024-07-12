@@ -1,6 +1,7 @@
 package com.nbcamp.b4trello.jwt;
 
 
+import com.nbcamp.b4trello.dto.ErrorMessageEnum;
 import com.nbcamp.b4trello.dto.TokenDTO;
 import com.nbcamp.b4trello.security.UserDetailsImpl;
 import com.nbcamp.b4trello.security.UserDetailsServiceImpl;
@@ -14,7 +15,6 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Date;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AccountExpiredException;
@@ -31,7 +31,7 @@ public class JwtUtil {
     private final Key key;
 
 
-    public JwtUtil(@Value("${JWT_SECRET_KEY}") String secretKey,
+    public JwtUtil(@Value("${jwt.secret.key}") String secretKey,
             UserDetailsServiceImpl detailsService) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
@@ -78,7 +78,7 @@ public class JwtUtil {
     public Authentication getAuthentication(String token) {
         UserDetailsImpl userDetails = userDetailsService.loadUserByUsername(getUsername(token));
         if (!userDetails.isAccountNonExpired()) {
-            throw new AccountExpiredException("만료된 토큰입니다.");
+            throw new IllegalArgumentException(ErrorMessageEnum.EXPIRED_TOKEN.getMessage());
         }
         return new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(),
                 userDetails.getAuthorities());
@@ -89,23 +89,18 @@ public class JwtUtil {
      * 토큰 정보 검증
      */
     public boolean validateToken(String token) {
-        log.info("validateToken start");
-        log.info("token: {}", token);
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("Invalid JWT Token", e);
+            throw new IllegalArgumentException(ErrorMessageEnum.INVALID_TOKEN.getMessage());
         } catch (ExpiredJwtException e) {
-            // refresh token 활용해서 재발급
-            log.info("Expired JWT Token", e);
-            throw e;
+            throw new IllegalArgumentException(ErrorMessageEnum.EXPIRED_TOKEN.getMessage());
         } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT Token", e);
+            throw new IllegalArgumentException(ErrorMessageEnum.AUTH_BAD_TOKEN.getMessage());
         } catch (IllegalArgumentException e) {
-            log.info("JWT claims string is empty.", e);
+            throw new IllegalArgumentException(ErrorMessageEnum.JWT_CLAIMS_EMPTY.getMessage());
         }
-        return false;
     }
 
     private Claims parseClaims(String token) {

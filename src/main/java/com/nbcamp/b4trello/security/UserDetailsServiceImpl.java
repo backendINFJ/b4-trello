@@ -1,5 +1,6 @@
 package com.nbcamp.b4trello.security;
 
+import com.nbcamp.b4trello.dto.ErrorMessageEnum;
 import com.nbcamp.b4trello.entity.User;
 import com.nbcamp.b4trello.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -21,7 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetailsImpl loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Not Found " + username));
+                .orElseThrow(() -> new IllegalArgumentException(ErrorMessageEnum.USER_NOT_FOUND.getMessage()));
         return new UserDetailsImpl(user);
     }
 }

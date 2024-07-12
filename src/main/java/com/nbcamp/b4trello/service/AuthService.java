@@ -38,7 +38,7 @@ public class AuthService implements LogoutHandler {
      */
     @Transactional
     public TokenDTO reissue(String refreshToken) {
-        Optional<RefreshToken> token = refreshTokenRepository.findByToken(refreshToken);
+        Optional<RefreshToken> token = refreshTokenRepository.findByRefreshToken(refreshToken);
         if(token!=null && !token.get().getRefreshToken().equals(refreshToken)){
             throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.AUTH_BAD_TOKEN));
         }
@@ -64,7 +64,7 @@ public class AuthService implements LogoutHandler {
         }
         String accessToken = authHeader.substring(7);
         String username = jwtUtil.getUsername(accessToken);
-        RefreshToken refreshToken = refreshTokenRepository.findByToken(username).orElse(null);
+        RefreshToken refreshToken = refreshTokenRepository.findByUsername(username).orElse(null);
         if(refreshToken == null) {
             throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.AUTH_BAD_TOKEN));
         }
