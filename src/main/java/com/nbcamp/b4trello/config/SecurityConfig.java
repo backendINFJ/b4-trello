@@ -1,5 +1,7 @@
 package com.nbcamp.b4trello.config;
 
+import com.nbcamp.b4trello.exception.CustomAccessDeniedHandler;
+import com.nbcamp.b4trello.exception.CustomAuthenticationEntryPoint;
 import com.nbcamp.b4trello.jwt.JwtAuthenticationFilter;
 import com.nbcamp.b4trello.jwt.JwtAuthorizationFilter;
 import com.nbcamp.b4trello.jwt.JwtUtil;
@@ -14,6 +16,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -95,6 +98,18 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
 
         );
+        //필터중 예외 처리
+        http.exceptionHandling(auth -> {
+            auth.accessDeniedPage("/forbidden");
+            auth.accessDeniedHandler(new CustomAccessDeniedHandler());
+            auth.authenticationEntryPoint(new CustomAuthenticationEntryPoint());
+        });
+
+        http.logout(auth -> auth
+                .logoutUrl("/api/auth/logout")
+                .addLogoutHandler(authService)
+                .logoutSuccessHandler(
+                        (((request, response, authentication) -> SecurityContextHolder.clearContext()))));
 
 
 
