@@ -1,29 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Paper, Button, Typography } from '@mui/material';
+import { Box, Paper, Typography } from '@mui/material';
+import { getCards, createCard, deleteCard, updateCardOrder } from '../api/cardApi';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-// import { getCards, createCard, deleteCard, updateCardOrder } from '../api/cardApi';
 
-// 더미 함수들 추가
-const getCards = async (columnId) => {
-    return [
-        { id: '1', title: 'Sample Card 1' },
-        { id: '2', title: 'Sample Card 2' }
-    ];
-};
-
-const createCard = async (columnId, card) => {
-    return { id: Math.random().toString(), ...card };
-};
-
-const deleteCard = async (columnId, cardId) => {
-    return true;
-};
-
-const updateCardOrder = async (columnId, cards) => {
-    return true;
-};
-
-const Column = ({ columnId }) => {
+const Card = ({ columnId }) => {
     const [cards, setCards] = useState([]);
 
     useEffect(() => {
@@ -44,7 +24,7 @@ const Column = ({ columnId }) => {
         setCards(cards.filter(card => card.id !== cardId));
     };
 
-    const onDragEnd = (result) => {
+    const onDragEnd = async (result) => {
         if (!result.destination) return;
 
         const updatedCards = [...cards];
@@ -52,20 +32,16 @@ const Column = ({ columnId }) => {
         updatedCards.splice(result.destination.index, 0, movedCard);
 
         setCards(updatedCards);
-        // 실제 API 호출은 주석 처리된 상태
-        // await updateCardOrder(columnId, updatedCards.map((card, index) => ({ ...card, order: index })));
+        await updateCardOrder(columnId, updatedCards.map((card, index) => ({ ...card, order: index })));
     };
 
     return (
-        <Box sx={{ margin: 2, backgroundColor: '#f4f4f4', borderRadius: 2, width: 300 }}>
-            <Typography variant="h6" sx={{ padding: 2, backgroundColor: '#e0e0e0', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
-                Column {columnId}
-            </Typography>
-            <Button onClick={handleAddCard} sx={{ margin: 2 }}>Add Card</Button>
+        <Box>
+            <Button onClick={handleAddCard}>Add Card</Button>
             <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId={`droppable-${columnId}`} direction="vertical">
+                <Droppable droppableId="cards" direction="vertical">
                     {(provided) => (
-                        <Box {...provided.droppableProps} ref={provided.innerRef} sx={{ padding: 2 }}>
+                        <Box {...provided.droppableProps} ref={provided.innerRef}>
                             {cards.map((card, index) => (
                                 <Draggable key={card.id} draggableId={card.id} index={index}>
                                     {(provided) => (
@@ -73,10 +49,10 @@ const Column = ({ columnId }) => {
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
-                                            sx={{ margin: 1, padding: 2, backgroundColor: '#ffffff' }}
+                                            sx={{ margin: 2, padding: 2 }}
                                         >
                                             <Typography variant="body1">{card.title}</Typography>
-                                            <Button onClick={() => handleDeleteCard(card.id)} sx={{ color: 'red' }}>Delete</Button>
+                                            <Button onClick={() => handleDeleteCard(card.id)}>Delete</Button>
                                         </Paper>
                                     )}
                                 </Draggable>
@@ -90,4 +66,4 @@ const Column = ({ columnId }) => {
     );
 };
 
-export default Column;
+export default Card;
