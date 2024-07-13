@@ -1,6 +1,6 @@
 package com.nbcamp.b4trello.dto;
 
-import com.nbcamp.b4trello.entity.Column;
+import com.nbcamp.b4trello.entity.Columns;
 
 public class ColumnResponseDto {
     private Long columnId;
@@ -8,11 +8,11 @@ public class ColumnResponseDto {
     private String columnTitle;
     private Integer columnSequence;
 
-    public ColumnResponseDto(Column column) {
-        this.columnId = column.getColumnId();
-        this.boardId = column.getBoard().getId();
-        this.columnTitle = column.getColumnTitle();
-        this.columnSequence = column.getColumnSequence();
+    public ColumnResponseDto(Columns columns) {
+        this.columnId = columns.getColumnId();
+        this.boardId = columns.getBoard().getId();
+        this.columnTitle = columns.getColumnTitle();
+        this.columnSequence = columns.getColumnSequence();
     }
 
     public Long getColumnId() {

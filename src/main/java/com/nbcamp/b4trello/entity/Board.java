@@ -37,7 +37,7 @@ public class Board { // 보드 수정 기능에서 필수예외처리 추가에 
 
     @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(mappedBy = "board")
-    private List<Column> columns;
+    private List<Columns> columns;
 
     @Builder
     public Board(String boardName, String description) {
