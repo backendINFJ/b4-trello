@@ -25,7 +25,7 @@ public class UserService {
     /**
      * 유저 생성 메서드
      * @param userDto
-     * @return 완료 메시지
+     * @return UserResponseDto
      */
     @Transactional
     public UserResponseDto createUser(UserRequestDto userDto) {
@@ -47,7 +47,7 @@ public class UserService {
      * @param userId
      * @param updateDTO
      * @param user
-     * @return 완료 메시지
+     * @return UserUpdateResponseDto
      */
     @Transactional
     public UserUpdateResponseDto updateUser(Long userId, UserUpdateRequestDto updateDTO, User user) {
@@ -78,9 +78,8 @@ public class UserService {
      * 유저 탈퇴 메서드
      * @param userId
      * @param user
-     * @return 완료 메시지
      */
-    public ResponseEntity<String> deleteUser(Long userId, User user) {
+    public void deleteUser(Long userId, User user) {
 
         Optional<User> originUser = userRepository.findById(userId);
         if (originUser.isEmpty() || originUser.get().getStatus().equals(StatusEnum.DENIED)) {
@@ -94,7 +93,6 @@ public class UserService {
 
         originUser.get().deleteUser();
         userRepository.save(originUser.get());
-        return ResponseEntity.status(HttpStatus.OK).body("탈퇴 완료");
     }
 
     // 아이디 일치하는지 검증
