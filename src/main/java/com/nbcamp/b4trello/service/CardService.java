@@ -16,6 +16,7 @@ import com.nbcamp.b4trello.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class CardService {
 
@@ -29,9 +30,15 @@ public class CardService {
 	 * @param user 유저도 주입
 	 * @return 저장한 카드 디티오로 반환
 	 */
+	@Transactional
 	public CardResponseDto createCard(long columnId, CardRequestDto requestDto, User user) {
 		Column column = columnRepository.findById(columnId).orElseThrow();
-		Card card = cardRepository.save(new Card(column, requestDto, user));
+
+		Card card = cardRepository.save( Card.builder()
+			.column(column)
+			.requestDto(requestDto)
+			.user(user)
+			.build());
 
 		return new CardResponseDto(card);
 	}
@@ -93,6 +100,7 @@ public class CardService {
 	 * @param columnId
 	 * @param user
 	 */
+	@Transactional
 	public void deleteCard(long cardId, long columnId, User user) {
 		Column column = columnRepository.findById(columnId).orElseThrow();
 

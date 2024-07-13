@@ -22,7 +22,7 @@ import com.nbcamp.b4trello.service.CardService;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-@RequestMapping("/column/{columnId}/cards")
+@RequestMapping("/column/{column}/cards")
 @RestController
 public class CardController {
 
@@ -37,15 +37,16 @@ public class CardController {
 	 */
 	@PostMapping
 	public ResponseEntity<CommonResponse<CardResponseDto>> createCard(
-		@PathVariable long columnId,
+		@PathVariable("column") long columnId,
 		@RequestBody CardRequestDto cardRequestDto,
 		@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
 		CardResponseDto responseDto = cardService.createCard(
 			columnId, cardRequestDto, userDetails.getUser());
 		return ResponseEntity.ok(
-			new CommonResponse<CardResponseDto>(
-				ResponseEnum.CREATE_CARD, responseDto));
+			CommonResponse.<CardResponseDto>builder()
+				.responseEnum(ResponseEnum.CREATE_CARD)
+				.data(responseDto).build());
 	}
 
 	/**
@@ -53,14 +54,16 @@ public class CardController {
 	 * @param cardId 조회할 카드 아아디
 	 * @return CardResponseDto 반환
 	 */
-	@GetMapping("/{cardId}")
+	@GetMapping("/{card}")
 	public ResponseEntity<CommonResponse<CardResponseDto>> getCard(
-		@PathVariable long cardId) {
+		@PathVariable("card") long cardId) {
 
 		CardResponseDto responseDto = cardService.getCard(cardId);
 		return ResponseEntity.ok(
-			new CommonResponse<CardResponseDto>(
-				ResponseEnum.GET_CARD, responseDto));
+			CommonResponse.<CardResponseDto>builder()
+				.responseEnum(ResponseEnum.GET_CARD)
+				.data(responseDto)
+				.build());
 	}
 
 	/**
@@ -71,18 +74,20 @@ public class CardController {
 	 * @param requestDto
 	 * @return
 	 */
-	@PutMapping("/{cardId}")
+	@PutMapping("/{card}")
 	public ResponseEntity<CommonResponse<CardResponseDto>> updateCard(
-		@PathVariable long cardId,
-		@PathVariable long columnId,
+		@PathVariable("card") long cardId,
+		@PathVariable("column") long columnId,
 		@AuthenticationPrincipal UserDetailsImpl userDetails,
 		@RequestBody CardUpdateRequestDto requestDto) {
 
 		CardResponseDto responseDto =
 			cardService.updateCard(columnId, cardId, userDetails.getUser(), requestDto);
 		return ResponseEntity.ok(
-			new CommonResponse<CardResponseDto>(
-				ResponseEnum.GET_CARD, responseDto));
+			CommonResponse.<CardResponseDto>builder()
+				.responseEnum(ResponseEnum.UPDATE_CARD)
+				.data(responseDto)
+				.build());
 	}
 
 	/**
@@ -91,16 +96,18 @@ public class CardController {
 	 * @param columnId
 	 * @return
 	 */
-	@PutMapping("/{cardId}/move")
+	@PutMapping("/{card}/move")
 	public ResponseEntity<CommonResponse<CardResponseDto>> moveCard(
-		@PathVariable long cardId,
-		@PathVariable long columnId) {
+		@PathVariable("card") long cardId,
+		@PathVariable("column") long columnId) {
 
 		CardResponseDto responseDto = cardService.moveCard(columnId, cardId);
 
 		return ResponseEntity.ok(
-			new CommonResponse<CardResponseDto>(
-				ResponseEnum.GET_CARD, responseDto));
+			CommonResponse.<CardResponseDto>builder()
+				.responseEnum(ResponseEnum.UPDATE_CARD)
+				.data(responseDto)
+				.build());
 	}
 
 	/**
@@ -110,18 +117,18 @@ public class CardController {
 	 * @param userDetails
 	 * @return
 	 */
-	@DeleteMapping("/{cardId}")
+	@DeleteMapping("/{card}")
 	public ResponseEntity<CommonResponse<CardResponseDto>> deleteCard(
-		@PathVariable long cardId,
-		@PathVariable long columnId,
+		@PathVariable("card") long cardId,
+		@PathVariable("column") long columnId,
 		@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
 		cardService.deleteCard(cardId, columnId, userDetails.getUser());
 
 		return ResponseEntity.ok(
-			new CommonResponse<>(
-				ResponseEnum.DELETE_CARD, null
-			)
-		);
+			CommonResponse.<CardResponseDto>builder()
+				.responseEnum(ResponseEnum.DELETE_CARD)
+				.data(null)
+				.build());
 	}
 }

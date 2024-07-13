@@ -14,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -41,6 +42,7 @@ public class Card {
 
 	private LocalDate dueDate;
 
+	@Builder
 	public Card(Column column, CardRequestDto requestDto, User user) {
 		this.column = column;
 		this.user = user;
