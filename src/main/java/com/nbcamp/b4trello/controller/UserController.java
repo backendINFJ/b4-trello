@@ -35,7 +35,7 @@ public class UserController {
     public ResponseEntity<CommonResponse<UserResponseDto>> createUser(@Valid @RequestBody UserRequestDto userDto) {
         UserResponseDto userResponseDTO = userService.createUser(userDto);
         CommonResponse<UserResponseDto> response = CommonResponse.<UserResponseDto>builder()
-                .status(ResponseEnum.CREATE_USER)
+                .responseEnum(ResponseEnum.CREATE_USER)
                 .data(userResponseDTO).build();
         return ResponseEntity.status(ResponseEnum.CREATE_USER.getHttpStatus()).body(response);
     }
@@ -50,7 +50,7 @@ public class UserController {
         UserUpdateResponseDto userUpdateDTO = userService.updateUser(userId, updateDTO, userDetails.getUser());
 
         CommonResponse<UserUpdateResponseDto> response = CommonResponse.<UserUpdateResponseDto>builder()
-                .status(ResponseEnum.UPDATE_USER)
+                .responseEnum(ResponseEnum.UPDATE_USER)
                 .data(userUpdateDTO).build();
         return ResponseEntity.status(ResponseEnum.UPDATE_USER.getHttpStatus()).body(response);
     }
