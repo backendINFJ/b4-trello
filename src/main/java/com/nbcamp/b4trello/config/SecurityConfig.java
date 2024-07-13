@@ -11,6 +11,7 @@ import com.nbcamp.b4trello.service.AuthService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -91,7 +92,8 @@ public class SecurityConfig {
         http.authorizeHttpRequests((authorizeHttpRequests) ->
                 authorizeHttpRequests
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers("/users/signup/**","/auth/login","/api/auth/reissue").permitAll()
+                        .requestMatchers("/auth/login","/auth/reissue","/users").permitAll()
+
 
                         // 서버 단에서 에러가 발생시 아래 url이 에러창을 띄워준다
                         .requestMatchers("/error").permitAll()
