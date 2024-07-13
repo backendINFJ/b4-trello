@@ -1,17 +1,19 @@
 package com.nbcamp.b4trello.service;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nbcamp.b4trello.dto.CardListResponseDto;
+import com.nbcamp.b4trello.dto.CardRequestDto;
 import com.nbcamp.b4trello.dto.CardResponseDto;
 import com.nbcamp.b4trello.dto.CardUpdateRequestDto;
 import com.nbcamp.b4trello.dto.ColumnRepository;
-import com.nbcamp.b4trello.dto.CardRequestDto;
 import com.nbcamp.b4trello.dto.ErrorMessageEnum;
 import com.nbcamp.b4trello.entity.Card;
 import com.nbcamp.b4trello.entity.User;
+import com.nbcamp.b4trello.repository.CardDslRepository;
 import com.nbcamp.b4trello.repository.CardRepository;
-import com.nbcamp.b4trello.security.UserDetailsImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class CardService {
 
 	private final CardRepository cardRepository;
+	private final CardDslRepository cardDslRepository;
 	private final ColumnRepository columnRepository;
 
 	/**
@@ -111,5 +114,20 @@ public class CardService {
 			throw new IllegalArgumentException(ErrorMessageEnum.MISMATCH_USER.getMessage());
 		}
 		cardRepository.delete(card);
+	}
+
+	public CardListResponseDto getCardList(String sortBy, long boardId) {
+
+		if (sortBy.equals("column") || sortBy.equals("id") || sortBy.equals("manager")) {
+			throw new IllegalArgumentException(ErrorMessageEnum.BAD_PARAM.getMessage());
+		}
+
+		Sort sort = Sort.by(Sort.Direction.DESC, sortBy);
+
+		return new CardListResponseDto(
+			cardDslRepository.getCards(sort, boardId)
+				.stream()
+				.map(CardResponseDto::new)
+				.toList());
 	}
 }

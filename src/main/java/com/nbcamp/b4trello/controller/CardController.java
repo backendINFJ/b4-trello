@@ -131,4 +131,13 @@ public class CardController {
 				.data(null)
 				.build());
 	}
+
+	@GetMapping
+	public ResponseEntity<CommonResponse<CardListResponseDto>> getCards(
+		@RequestParam String sortBy, @RequestParam long boardId,
+		@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+		cardService.getCardList(sortBy, boardId);
+
+	}
 }
