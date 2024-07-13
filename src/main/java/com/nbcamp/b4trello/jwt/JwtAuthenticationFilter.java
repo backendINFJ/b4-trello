@@ -3,7 +3,7 @@ package com.nbcamp.b4trello.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nbcamp.b4trello.dto.AuthRequestDTO;
 import com.nbcamp.b4trello.dto.ErrorMessageEnum;
-import com.nbcamp.b4trello.dto.TokenDTO;
+import com.nbcamp.b4trello.dto.TokenDto;
 import com.nbcamp.b4trello.entity.RefreshToken;
 import com.nbcamp.b4trello.entity.User;
 import com.nbcamp.b4trello.enums.StatusEnum;
@@ -78,7 +78,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
-        TokenDTO jwtToken = jwtUtil.createToken(authResult);
+        TokenDto jwtToken = jwtUtil.createToken(authResult);
         RefreshToken refreshToken = RefreshToken.builder()
                 .username(userDetails.getUsername())
                 .refreshToken(jwtToken.getRefreshToken())

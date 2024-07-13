@@ -136,12 +136,13 @@ public class BoardService {
                 () -> new RuntimeException(ErrorMessageEnum.USER_NOT_FOUND.getMessage())
         );
 
+        //수정 바람
         // 해당 유저쪽 개발되면 리팩토링 예정
         User changedUser = User.builder().email(invitedUser.getEmail())
                 .password(invitedUser.getPassword())
-                .name(invitedUser.getName())
-                .refreshToken(invitedUser.getRefreshToken())
-                .role(UserType.UserType_MANAGER) // 튜텨님 질문 통해 해결
+                .username(invitedUser.getUsername())
+                // .refreshToken(invitedUser.getRefreshToken())
+                // .role(UserType.UserType_MANAGER) // 튜텨님 질문 통해 해결
                 .build();
 
         UserBoard inviteUser = UserBoard.builder()

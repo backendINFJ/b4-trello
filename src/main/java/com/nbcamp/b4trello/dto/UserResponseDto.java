@@ -4,11 +4,11 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class UserResponseDTO {
+public class UserResponseDto {
     private String username;
 
     @Builder
-    public UserResponseDTO(String username) {
+    public UserResponseDto(String username) {
         this.username = username;
     }
 }
