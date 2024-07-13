@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 @Getter
 @AllArgsConstructor
-public class ErrorMessageDTO {
+public class ErrorMessageDto {
         private String errorMessage;
         private int statusCode;
 

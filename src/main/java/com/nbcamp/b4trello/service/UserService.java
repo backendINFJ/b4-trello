@@ -1,10 +1,10 @@
 package com.nbcamp.b4trello.service;
 
 import com.nbcamp.b4trello.dto.ErrorMessageEnum;
-import com.nbcamp.b4trello.dto.UserRequestDTO;
-import com.nbcamp.b4trello.dto.UserResponseDTO;
-import com.nbcamp.b4trello.dto.UserUpdateRequestDTO;
-import com.nbcamp.b4trello.dto.UserUpdateResponseDTO;
+import com.nbcamp.b4trello.dto.UserRequestDto;
+import com.nbcamp.b4trello.dto.UserResponseDto;
+import com.nbcamp.b4trello.dto.UserUpdateRequestDto;
+import com.nbcamp.b4trello.dto.UserUpdateResponseDto;
 import com.nbcamp.b4trello.entity.User;
 import com.nbcamp.b4trello.enums.StatusEnum;
 import com.nbcamp.b4trello.repository.UserRepository;
@@ -25,10 +25,10 @@ public class UserService {
     /**
      * 유저 생성 메서드
      * @param userDto
-     * @return 완료 메시지
+     * @return UserResponseDto
      */
     @Transactional
-    public UserResponseDTO createUser(UserRequestDTO userDto) {
+    public UserResponseDto createUser(UserRequestDto userDto) {
 
         Optional<User> checkUsername = userRepository.findByUsername(userDto.getUsername());
         if (checkUsername.isPresent()) {
@@ -39,7 +39,7 @@ public class UserService {
                 userDto.getNickname(), userDto.getEmail());
 
         userRepository.save(user);
-        return UserResponseDTO.builder().username(user.getUsername()).build();
+        return UserResponseDto.builder().username(user.getUsername()).build();
     }
 
     /**
@@ -47,10 +47,10 @@ public class UserService {
      * @param userId
      * @param updateDTO
      * @param user
-     * @return 완료 메시지
+     * @return UserUpdateResponseDto
      */
     @Transactional
-    public UserUpdateResponseDTO updateUser(Long userId, UserUpdateRequestDTO updateDTO, User user) {
+    public UserUpdateResponseDto updateUser(Long userId, UserUpdateRequestDto updateDTO, User user) {
 
             if(!user.getId().equals(userId)){
                 throw new IllegalArgumentException(ErrorMessageEnum.PRIVATE_USER.getMessage());
@@ -59,7 +59,7 @@ public class UserService {
                 throw new IllegalArgumentException(ErrorMessageEnum.SAME_PASSWORD.getMessage());
             }
 
-            UserUpdateRequestDTO updateUser = null;
+            UserUpdateRequestDto updateUser = null;
              updateUser.builder()
                     .nickname(updateDTO.getNickname())
                     .password(updateDTO.getPassword())
@@ -71,16 +71,15 @@ public class UserService {
             throw new IllegalArgumentException(ErrorMessageEnum.USER_NOT_FOUND.getMessage());
         }
         originUser.get().updateUser(updateUser);
-        return UserUpdateResponseDTO.builder().nickname(originUser.get().getNickname()).build();
+        return UserUpdateResponseDto.builder().nickname(originUser.get().getNickname()).build();
     }
 
     /**
      * 유저 탈퇴 메서드
      * @param userId
      * @param user
-     * @return 완료 메시지
      */
-    public ResponseEntity<String> deleteUser(Long userId, User user) {
+    public void deleteUser(Long userId, User user) {
 
         Optional<User> originUser = userRepository.findById(userId);
         if (originUser.isEmpty() || originUser.get().getStatus().equals(StatusEnum.DENIED)) {
@@ -94,7 +93,6 @@ public class UserService {
 
         originUser.get().deleteUser();
         userRepository.save(originUser.get());
-        return ResponseEntity.status(HttpStatus.OK).body("탈퇴 완료");
     }
 
     // 아이디 일치하는지 검증

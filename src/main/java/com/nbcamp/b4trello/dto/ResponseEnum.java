@@ -13,6 +13,7 @@ public enum ResponseEnum {
 	USER_LOGOUT("로그아웃 완료", HttpStatus.OK),
 	SEND_MAIL("메일전송 완료", HttpStatus.OK),
 	ACCESS_MAIL("메일 인증 완료", HttpStatus.OK),
+	DELETE_USER("회원탈퇴 완료", HttpStatus.OK),
 	CREATE_CARD("카드 생성 완료", HttpStatus.CREATED);
 
 	private final String message;

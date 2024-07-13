@@ -7,7 +7,7 @@ import lombok.Getter;
 
 
 @Getter
-public class AuthRequestDTO {
+public class AuthRequestDto {
     @Pattern(regexp = "^[a-z0-9]+$", message = "ID는 소문자 포함 영문 + 숫자만 허용됩니다.")
     @Size(min = 10, max = 20, message = "사용자 ID는 최소 4글자 이상, 최대 10글자 이하여야 합니다.")
     @NotBlank(message = "userId는 필수입니다.")
