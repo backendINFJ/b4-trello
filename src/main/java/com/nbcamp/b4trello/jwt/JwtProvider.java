@@ -2,7 +2,7 @@ package com.nbcamp.b4trello.jwt;
 
 
 import com.nbcamp.b4trello.dto.ErrorMessageEnum;
-import com.nbcamp.b4trello.dto.TokenDTO;
+import com.nbcamp.b4trello.dto.TokenDto;
 import com.nbcamp.b4trello.security.UserDetailsImpl;
 import com.nbcamp.b4trello.security.UserDetailsServiceImpl;
 import io.jsonwebtoken.Claims;
@@ -37,7 +37,7 @@ public class JwtProvider {
         this.userDetailsService = detailsService;
     }
 
-    public TokenDTO createToken(Authentication authentication) {
+    public TokenDto createToken(Authentication authentication) {
 
         long now = (new Date()).getTime();
 
@@ -62,7 +62,7 @@ public class JwtProvider {
                         .setIssuer(authentication.getName())
                         .compact();
 
-        return TokenDTO.builder()
+        return TokenDto.builder()
                 .grantType("Bearer")
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)

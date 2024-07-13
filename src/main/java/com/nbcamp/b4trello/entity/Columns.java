@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "column")
-public class Column {
+public class Columns {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long columnId;

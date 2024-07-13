@@ -2,8 +2,8 @@ package com.nbcamp.b4trello.service;
 
 import com.nbcamp.b4trello.config.MailManager;
 import com.nbcamp.b4trello.dto.ErrorMessageEnum;
-import com.nbcamp.b4trello.dto.TokenDTO;
-import com.nbcamp.b4trello.dto.UserResponseDTO;
+import com.nbcamp.b4trello.dto.TokenDto;
+import com.nbcamp.b4trello.dto.UserResponseDto;
 import com.nbcamp.b4trello.entity.RefreshToken;
 import com.nbcamp.b4trello.entity.User;
 import com.nbcamp.b4trello.jwt.JwtEnum;
@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Service;
@@ -46,13 +46,13 @@ public class AuthService implements LogoutHandler {
      * @return tokenDto
      */
     @Transactional
-    public TokenDTO reissue(String refreshToken) {
+    public TokenDto reissue(String refreshToken) {
         Optional<RefreshToken> token = refreshTokenRepository.findByRefreshToken(refreshToken);
         if(token!=null && !token.get().getRefreshToken().equals(refreshToken)){
             throw new IllegalArgumentException(ErrorMessageEnum.AUTH_BAD_TOKEN.getMessage());
         }
         Authentication authentication = jwtUtil.getAuthentication(refreshToken.substring(7));
-        TokenDTO tokenDto = jwtUtil.createToken(authentication);
+        TokenDto tokenDto = jwtUtil.createToken(authentication);
         token.get().updateRefreshToken(tokenDto.getRefreshToken());
         return tokenDto;
     }
@@ -101,14 +101,14 @@ public class AuthService implements LogoutHandler {
      * @param email
      * @return
      */
-    public UserResponseDTO checkMail(String key, String email){
+    public UserResponseDto checkMail(String key, String email){
         String insertKey = SHA256MailProvider.getEncrypt(key, email);
         if (!magickey.equals(insertKey)){
             throw new IllegalArgumentException(ErrorMessageEnum.MAIL_BAD_REQUEST.getMessage());
         }
         Optional<User> user = userRepository.findByEmail(email);
         user.get().verifiStatus();
-        return UserResponseDTO.builder().username(user.get().getUsername()).build();
+        return UserResponseDto.builder().username(user.get().getUsername()).build();
     }
 
 }
