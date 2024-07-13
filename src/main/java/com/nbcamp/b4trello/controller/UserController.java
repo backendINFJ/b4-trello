@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/user")
+@RequestMapping("/users")
 @RestController
 public class UserController {
 
@@ -31,11 +31,11 @@ public class UserController {
      * 유저 생성
      * @param userDto
      */
-    @PostMapping("/")
+    @PostMapping()
     public ResponseEntity<CommonResponse<UserResponseDto>> createUser(@Valid @RequestBody UserRequestDto userDto) {
         UserResponseDto userResponseDTO = userService.createUser(userDto);
         CommonResponse<UserResponseDto> response = CommonResponse.<UserResponseDto>builder()
-                .responseEnum(ResponseEnum.CREATE_USER)
+                .status(ResponseEnum.CREATE_USER)
                 .data(userResponseDTO).build();
         return ResponseEntity.status(ResponseEnum.CREATE_USER.getHttpStatus()).body(response);
     }
@@ -44,13 +44,13 @@ public class UserController {
      * @param userId
      * @param userDetails
      */
-    @PatchMapping("/{userId}")
-    public ResponseEntity<CommonResponse<UserUpdateResponseDto>> updateUser(@PathVariable("userId") Long userId, @Valid @RequestBody UserUpdateRequestDto updateDTO, @AuthenticationPrincipal
+    @PatchMapping("/{user-id}")
+    public ResponseEntity<CommonResponse<UserUpdateResponseDto>> updateUser(@PathVariable("user-id") Long userId, @Valid @RequestBody UserUpdateRequestDto updateDTO, @AuthenticationPrincipal
     UserDetailsImpl userDetails) {
         UserUpdateResponseDto userUpdateDTO = userService.updateUser(userId, updateDTO, userDetails.getUser());
 
         CommonResponse<UserUpdateResponseDto> response = CommonResponse.<UserUpdateResponseDto>builder()
-                .responseEnum(ResponseEnum.UPDATE_USER)
+                .status(ResponseEnum.UPDATE_USER)
                 .data(userUpdateDTO).build();
         return ResponseEntity.status(ResponseEnum.UPDATE_USER.getHttpStatus()).body(response);
     }
@@ -59,8 +59,9 @@ public class UserController {
      * @param userId
      * @param userDetails
      */
-    @PostMapping("/delete/{userId}")
-    public ResponseEntity<String> deleteUser(@PathVariable("userId") Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return userService.deleteUser(userId, userDetails.getUser());
+    @PostMapping("/delete/{user-id}")
+    public ResponseEntity<String> deleteUser(@PathVariable("user-id") Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        userService.deleteUser(userId, userDetails.getUser());
+        return ResponseEntity.status(ResponseEnum.DELETE_USER.getHttpStatus()).body(ResponseEnum.DELETE_USER.getMessage());
     }
 }

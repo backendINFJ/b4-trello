@@ -17,9 +17,9 @@ import lombok.Setter;
 
 
 @Getter
-@Entity(name = "users")
+@Entity(name = "user")
 @NoArgsConstructor
-@Table(name = "users")
+@Table(name = "user")
 public class User extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
