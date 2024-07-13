@@ -182,3 +182,4 @@ $RECYCLE.BIN/
 /.idea/modules/b4-trello.main.iml
 /.idea/modules.xml
 /.gradle
+/build
