@@ -118,7 +118,7 @@ public class CardService {
 
 	public CardListResponseDto getCardList(String sortBy, long boardId) {
 
-		if (sortBy.equals("column") || sortBy.equals("id") || sortBy.equals("manager")) {
+		if (!(sortBy.equals("column") || sortBy.equals("id") || sortBy.equals("manager"))) {
 			throw new IllegalArgumentException(ErrorMessageEnum.BAD_PARAM.getMessage());
 		}
 
