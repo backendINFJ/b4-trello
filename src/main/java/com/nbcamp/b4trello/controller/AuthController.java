@@ -2,7 +2,7 @@ package com.nbcamp.b4trello.controller;
 
 import com.nbcamp.b4trello.dto.KeyDto;
 import com.nbcamp.b4trello.dto.ResponseEnum;
-import com.nbcamp.b4trello.dto.TokenDTO;
+import com.nbcamp.b4trello.dto.TokenDto;
 import com.nbcamp.b4trello.jwt.JwtEnum;
 import com.nbcamp.b4trello.security.UserDetailsImpl;
 import com.nbcamp.b4trello.service.AuthService;
@@ -37,7 +37,7 @@ public class AuthController {
     public ResponseEntity<String> reissue(HttpServletRequest request,
             HttpServletResponse response) {
         String refreshToken = request.getHeader(JwtEnum.REFRESH_TOKEN.getValue());
-        TokenDTO token = authService.reissue(refreshToken);
+        TokenDto token = authService.reissue(refreshToken);
         response.setHeader(JwtEnum.ACCESS_TOKEN.getValue(), token.getAccessToken());
         response.setHeader(JwtEnum.REFRESH_TOKEN.getValue(), token.getRefreshToken());
         return ResponseEntity.ok("재발급완료");

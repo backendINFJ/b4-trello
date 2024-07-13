@@ -1,8 +1,10 @@
 package com.nbcamp.b4trello.controller;
 
 import com.nbcamp.b4trello.dto.*;
+import com.nbcamp.b4trello.entity.Board;
 import com.nbcamp.b4trello.entity.User;
 import com.nbcamp.b4trello.entity.UserBoard;
+import com.nbcamp.b4trello.entity.UserType;
 import com.nbcamp.b4trello.repository.UserBoardRepository;
 import com.nbcamp.b4trello.repository.UserRepository;
 import com.nbcamp.b4trello.security.UserDetailsImpl;
@@ -40,8 +42,7 @@ public class BoardController {
 
 		BoardResponseDto boardResponseDto = boardService.createBoard(boardRequestDto, userBoard);
 		CommonResponse<BoardResponseDto> response = CommonResponse.<BoardResponseDto>builder()
-			.statusCode(HttpStatus.CREATED)
-			.message(ResponseEnum.CREATE_BOARD.getMessage())
+			.responseEnum(ResponseEnum.CREATE_BOARD)
 			.data(boardResponseDto)
 			.build();
 
@@ -63,7 +64,7 @@ public class BoardController {
 
 		//생성자 변경
 		CommonResponse<List<BoardResponseDto>> response = CommonResponse.<List<BoardResponseDto>>builder()
-			.status(ResponseEnum.READ_BOARD)
+			.responseEnum(ResponseEnum.READ_BOARD)
 			.data(boardList)
 			.build();
 
@@ -81,10 +82,13 @@ public class BoardController {
 	public ResponseEntity<CommonResponse<BoardResponseDto>> updateBoard(
 		@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long boardId, @Valid @RequestBody BoardRequestDto boardRequestDto) {
 
-		BoardResponseDto boardResponseDto = boardService.updateBoard(boardId, boardRequestDto, userDetails.getUser();
+		// BoardResponseDto boardResponseDto = boardService.updateBoard(boardId, boardRequestDto, userDetails.getUser());
+		BoardResponseDto boardResponseDto = boardService.updateBoard(boardId, boardRequestDto, new UserBoard(new User(), new Board("d", "d"), UserType.USER));
+		//임시 수정 바람
+
 		//생성자 변경
 		CommonResponse<BoardResponseDto> response = CommonResponse.<BoardResponseDto>builder()
-			.status(ResponseEnum.UPDATE_BOARD)
+			.responseEnum(ResponseEnum.UPDATE_BOARD)
 			.data(boardResponseDto)
 			.build();
 
@@ -103,7 +107,7 @@ public class BoardController {
 
 		//생성자 변경
 		CommonResponse<String> response = CommonResponse.<String>builder()
-			.status(ResponseEnum.DELETE_BOARD)
+			.responseEnum(ResponseEnum.DELETE_BOARD)
 			.data(null) // null값 허용x -> 그냥 .data 자체 삭제
 			.build();
 
@@ -123,14 +127,17 @@ public class BoardController {
 
 		User user = userDetails.getUser();
 
-		UserBoard userBoard = userBoardRepository.findByUserAndBoardId(user, boardId)
-			.orElseThrow(() -> new RuntimeException(ErrorMessageEnum.BOARD_NOT_FAILEINVIATED.getMessage()));
+		//메서드가 없습니다 ..
+		// UserBoard userBoard = userBoardRepository.findByUserAndBoardId(user, boardId)
+		// 	.orElseThrow(() -> new RuntimeException(ErrorMessageEnum.BOARD_NOT_FAILEINVIATED.getMessage()));
+		UserBoard userBoard = new UserBoard(user, new Board("test", "tset"), UserType.USER); //임시 수정 바람
+		//// 위
 
 		String message = boardService.inviteUser(userBoard, boardId, userEmail);
 
 		//생성자 변경
 		CommonResponse<String> response = CommonResponse.<String>builder()
-			.status(ResponseEnum.INVITE_USER)
+			.responseEnum(ResponseEnum.INVITE_USER)
 			.build();
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);

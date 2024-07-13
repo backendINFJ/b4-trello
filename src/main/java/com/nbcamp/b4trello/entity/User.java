@@ -1,6 +1,6 @@
 package com.nbcamp.b4trello.entity;
 
-import com.nbcamp.b4trello.dto.UserUpdateRequestDTO;
+import com.nbcamp.b4trello.dto.UserUpdateRequestDto;
 import com.nbcamp.b4trello.enums.StatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -50,7 +50,7 @@ public class User extends Timestamped {
         this.email = email;
     }
     // 프로필 저장
-    public void updateUser(UserUpdateRequestDTO updateDTO) {
+    public void updateUser(UserUpdateRequestDto updateDTO) {
         this.nickname = updateDTO.getNickname();
         this.password = updateDTO.getPassword();
     }

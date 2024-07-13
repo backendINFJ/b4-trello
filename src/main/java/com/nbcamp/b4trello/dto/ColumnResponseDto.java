@@ -10,7 +10,7 @@ public class ColumnResponseDto {
 
     public ColumnResponseDto(Column column) {
         this.columnId = column.getColumnId();
-        this.boardId = column.getBoard().getBoardId();
+        this.boardId = column.getBoard().getId();
         this.columnTitle = column.getColumnTitle();
         this.columnSequence = column.getColumnSequence();
     }
