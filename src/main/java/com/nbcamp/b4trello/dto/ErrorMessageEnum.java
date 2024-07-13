@@ -26,7 +26,14 @@ public enum ErrorMessageEnum {
 	EXPIRED_TOKEN("만료된 토큰"),
 	JWT_CLAIMS_EMPTY("토큰 정보가 없습니다."),
 	MAIL_BAD_REQUEST("잘못된 인증번호입니다."),
+
 	//board error
+	BOARD_NOT_FOUND("보드를 찾을 수 없습니다."),
+	BOARD_NOT_DATA("보드 생성에 필요한 필수 데이터가 없습니다."),  // entity에서 예외처리 고민중 -> @NotBlank
+	BOARD_NOT_UNAUTHORIZED("권한에 맞지않는 사용자 입니다."),
+	BOARD_NOT_INVIATION("이미 초대된 사용자 입니다"),
+	BOARD_NOT_INVITED("초대할 권한이 없습니다"),
+	BOARD_NOT_FAILEINVIATED("권한이 없거나,보드가 존재하지 않습니다"),
 
 	// Column errors
 	COLUMN_NOT_FOUND("컬럼을 찾을 수 없습니다."),

@@ -4,6 +4,7 @@ import com.nbcamp.b4trello.dto.CommonResponse;
 import com.nbcamp.b4trello.dto.ResponseEnum;
 import com.nbcamp.b4trello.dto.UserRequestDTO;
 import com.nbcamp.b4trello.dto.UserResponseDTO;
+import com.nbcamp.b4trello.dto.UserResponseDto;
 import com.nbcamp.b4trello.dto.UserUpdateRequestDTO;
 import com.nbcamp.b4trello.dto.UserUpdateResponseDTO;
 import com.nbcamp.b4trello.security.UserDetailsImpl;
@@ -32,9 +33,9 @@ public class UserController {
      * @param userDto
      */
     @PostMapping("/")
-    public ResponseEntity<CommonResponse<UserResponseDTO>> createUser(@Valid @RequestBody UserRequestDTO userDto) {
-        UserResponseDTO userResponseDTO = userService.createUser(userDto);
-        CommonResponse<UserResponseDTO> response = CommonResponse.<UserResponseDTO>builder()
+    public ResponseEntity<CommonResponse<UserResponseDto>> createUser(@Valid @RequestBody UserResponseDto userDto) {
+        UserResponseDto userResponseDTO = userService.createUser(userDto);
+        CommonResponse<UserResponseDto> response = CommonResponse.<UserResponseDto>builder()
                 .status(ResponseEnum.CREATE_USER)
                 .data(userResponseDTO).build();
         return ResponseEntity.status(ResponseEnum.CREATE_USER.getHttpStatus()).body(response);
