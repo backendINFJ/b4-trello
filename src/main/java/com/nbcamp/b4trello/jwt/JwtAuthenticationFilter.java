@@ -3,6 +3,7 @@ package com.nbcamp.b4trello.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nbcamp.b4trello.dto.AuthRequestDto;
 import com.nbcamp.b4trello.dto.ErrorMessageEnum;
+import com.nbcamp.b4trello.dto.ResponseEnum;
 import com.nbcamp.b4trello.dto.TokenDto;
 import com.nbcamp.b4trello.entity.RefreshToken;
 import com.nbcamp.b4trello.entity.User;
@@ -50,7 +51,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(
             HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        log.info("로그인 시도");
         ObjectMapper objectMapper = new ObjectMapper();
         AuthRequestDto authRequestDTO = null;
         try{
@@ -86,16 +86,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         refreshTokenRepository.save(refreshToken);
         response.setHeader(JwtEnum.ACCESS_TOKEN.getValue(), jwtToken.getAccessToken());
         response.setHeader(JwtEnum.REFRESH_TOKEN.getValue(), jwtToken.getRefreshToken());
-        response.setStatus(200);
+        response.setStatus(ResponseEnum.CHARACTER_ENCODING.getHttpStatus().value());
         // 로그인 성공 메세지 반환
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(new ObjectMapper().writeValueAsString("로그인 성공!"));
+        response.setCharacterEncoding(ResponseEnum.CHARACTER_ENCODING.getMessage());
+        response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEnum.ACCESS_LOGIN.getMessage()));
     }
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         response.setStatus(401);
-        response.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding(ResponseEnum.CHARACTER_ENCODING.getMessage());
         response.getWriter().write(ErrorMessageEnum.LOGIN_FAILED.getMessage());
     }
 }
