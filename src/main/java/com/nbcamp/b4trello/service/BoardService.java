@@ -60,8 +60,11 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public List<BoardResponseDto> getAllBoards(User user) {
-        List<Board> boards = boardRepository.findAllByUser(user);
-        return boards.stream().map(BoardResponseDto::new).toList();
+        List<UserBoard> userBoards = userBoardRepository.findByUserId(user.getId());
+        return userBoards.stream()
+                .map(UserBoard::getBoard)
+                .map(BoardResponseDto::new)
+                .toList();
     }
 
     /**
