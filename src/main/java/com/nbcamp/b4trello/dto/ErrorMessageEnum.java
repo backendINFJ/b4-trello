@@ -16,7 +16,7 @@ public enum ErrorMessageEnum {
     BOARD_NOT_UNAUTHORIZED("권한에 맞지않는 사용자 입니다."),
     BOARD_NOT_INVIATION("이미 초대된 사용자 입니다"),
     BOARD_NOT_INVITED("초대할 권한이 없습니다"),
-    BOARD_NOT_FAILEINVIATED("권한이 없거나,보드가 존재하지 않습니다");
+    BOARD_NOT_FAILEINVIATED("권한이 없거나,보드가 존재하지 않습니다"),
 
 
     //column error
