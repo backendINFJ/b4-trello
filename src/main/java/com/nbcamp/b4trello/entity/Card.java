@@ -1,5 +1,6 @@
 package com.nbcamp.b4trello.entity;
 
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 
 import org.hibernate.annotations.OnDelete;
@@ -20,7 +21,8 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-@Entity
+@Entity(name = "cards")
+@Table(name = "cards")
 public class Card {
 
 	@Id
@@ -32,8 +34,8 @@ public class Card {
 	private String content;
 
 	@OnDelete(action = OnDeleteAction.CASCADE)
-	@ManyToOne(fetch = FetchType.LAZY)
-	private Column column;
+//	@ManyToOne(fetch = FetchType.LAZY)
+//	private Column column;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private User user;
