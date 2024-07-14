@@ -2,16 +2,22 @@ import React, { useState } from 'react';
 import { Modal, Box, Typography, Button, TextField, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
-const ColumnNameModal = ({ open, onClose, onSubmit }) => {
-    const [columnName, setColumnName] = useState('');
+const NewBoardModal = ({ open, onClose, onSubmit }) => {
+    const [boardName, setBoardName] = useState('');
+    const [description, setDescription] = useState('');
 
-    const handleChange = (event) => {
-        setColumnName(event.target.value);
+    const handleChangeName = (event) => {
+        setBoardName(event.target.value);
+    };
+
+    const handleChangeDescription = (event) => {
+        setDescription(event.target.value);
     };
 
     const handleSubmit = () => {
-        onSubmit(columnName);
-        setColumnName('');
+        onSubmit({ title: boardName, description });
+        setBoardName('');
+        setDescription('');
         onClose();
     };
 
@@ -22,20 +28,27 @@ const ColumnNameModal = ({ open, onClose, onSubmit }) => {
                 <IconButton sx={{ position: 'absolute', right: 8, top: 8 }} onClick={onClose}>
                     <CloseIcon />
                 </IconButton>
-                <Typography variant="h6">Enter Column Name</Typography>
+                <Typography variant="h6">Create New Board</Typography>
                 <TextField
-                    value={columnName}
-                    onChange={handleChange}
+                    value={boardName}
+                    onChange={handleChangeName}
                     fullWidth
                     margin="normal"
-                    label="Column Name"
+                    label="Board Name"
+                />
+                <TextField
+                    value={description}
+                    onChange={handleChangeDescription}
+                    fullWidth
+                    margin="normal"
+                    label="Description"
                 />
                 <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
-                    Submit
+                    Create
                 </Button>
             </Box>
         </Modal>
     );
 };
 
-export default ColumnNameModal;
+export default NewBoardModal;

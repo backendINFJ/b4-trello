@@ -10,8 +10,8 @@ const UserManagementForm = ({ open, onClose }) => {
                     <CloseIcon />
                 </IconButton>
                 <Typography variant="h6" sx={{ mb: 2 }}>User Management</Typography>
-                <Button variant="contained" color="primary" sx={{ mb: 2 }}>Change Profile</Button>
-                <Button variant="contained" color="primary">My Boards</Button>
+                <Button variant="contained" color="primary" sx={{ mb: 2, width: '100%' }}>Change Profile</Button>
+                <Button variant="contained" color="primary" sx={{ width: '100%' }}>My Boards</Button>
             </Box>
         </Modal>
     );

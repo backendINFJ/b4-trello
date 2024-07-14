@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { Modal, Box, Typography, Button, TextField, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
-const ColumnNameModal = ({ open, onClose, onSubmit }) => {
-    const [columnName, setColumnName] = useState('');
+const BoardNameModal = ({ open, onClose, onSubmit, initialName }) => {
+    const [boardName, setBoardName] = useState(initialName || '');
 
     const handleChange = (event) => {
-        setColumnName(event.target.value);
+        setBoardName(event.target.value);
     };
 
     const handleSubmit = () => {
-        onSubmit(columnName);
-        setColumnName('');
+        onSubmit(boardName);
+        setBoardName('');
         onClose();
     };
 
@@ -22,20 +22,20 @@ const ColumnNameModal = ({ open, onClose, onSubmit }) => {
                 <IconButton sx={{ position: 'absolute', right: 8, top: 8 }} onClick={onClose}>
                     <CloseIcon />
                 </IconButton>
-                <Typography variant="h6">Enter Column Name</Typography>
+                <Typography variant="h6">Change Board Name</Typography>
                 <TextField
-                    value={columnName}
+                    value={boardName}
                     onChange={handleChange}
                     fullWidth
                     margin="normal"
-                    label="Column Name"
+                    label="Board Name"
                 />
                 <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
-                    Submit
+                    Change
                 </Button>
             </Box>
         </Modal>
     );
 };
 
-export default ColumnNameModal;
+export default BoardNameModal;

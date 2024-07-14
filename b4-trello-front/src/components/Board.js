@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography, Button, IconButton } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import PermissionDeniedModal from './PermissionDeniedModal';
 import ColumnNameModal from './ColumnNameModal';
-import DeleteColumnModal from './DeleteColumnModal';
+// import { getColumns, createColumn, deleteColumn, updateColumnOrder } from '../api/columnApi';
 import Column from './Column';
 
 // 더미 함수들 추가
@@ -28,12 +29,10 @@ const updateColumnOrder = async (boardId, columns) => {
     return true;
 };
 
-const Board = ({ boardId, isManager }) => {
+const Board = ({ boardId, boardTitle, boardDescription, isManager, onNameChange }) => {
     const [columns, setColumns] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [columnModalOpen, setColumnModalOpen] = useState(false);
-    const [deleteColumnModalOpen, setDeleteColumnModalOpen] = useState(false);
-    const [columnToDelete, setColumnToDelete] = useState(null);
 
     useEffect(() => {
         const fetchColumns = async () => {
@@ -51,24 +50,9 @@ const Board = ({ boardId, isManager }) => {
         addNewColumn();
     };
 
-    const confirmDeleteColumn = (columnId) => {
-        setColumnToDelete(columnId);
-        setDeleteColumnModalOpen(true);
-    };
-
     const handleDeleteColumn = async (columnId) => {
         await deleteColumn(boardId, columnId);
         setColumns(columns.filter(column => column.id !== columnId));
-        setDeleteColumnModalOpen(false);
-    };
-
-    const moveColumn = (fromIndex, toIndex) => {
-        if (toIndex < 0 || toIndex >= columns.length) return;
-        const updatedColumns = [...columns];
-        const [movedColumn] = updatedColumns.splice(fromIndex, 1);
-        updatedColumns.splice(toIndex, 0, movedColumn);
-        setColumns(updatedColumns);
-        updateColumnOrder(boardId, updatedColumns);
     };
 
     const onDragEnd = (result) => {
@@ -84,13 +68,19 @@ const Board = ({ boardId, isManager }) => {
         updatedColumns.splice(result.destination.index, 0, movedColumn);
 
         setColumns(updatedColumns);
-        updateColumnOrder(boardId, updatedColumns.map((col, index) => ({ ...col, order: index })));
+        // 실제 API 호출은 주석 처리된 상태
+        // await updateColumnOrder(boardId, updatedColumns.map((col, index) => ({ ...col, order: index })));
     };
 
     return (
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 2 }}>
-                <Typography variant="h5">보드 제목</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="h5" sx={{ marginRight: 1 }}>{boardTitle}</Typography>
+                    <IconButton onClick={onNameChange} sx={{ padding: '0', marginLeft: '4px' }}>
+                        <EditIcon />
+                    </IconButton>
+                </Box>
             </Box>
             <Button onClick={() => setColumnModalOpen(true)} sx={{ margin: 2 }}>Add Column</Button>
             <DragDropContext onDragEnd={onDragEnd}>
@@ -106,14 +96,7 @@ const Board = ({ boardId, isManager }) => {
                                             {...provided.dragHandleProps}
                                             sx={{ margin: 2 }}
                                         >
-                                            <Column
-                                                columnId={column.id}
-                                                title={column.title}
-                                                isManager={isManager}
-                                                index={index}
-                                                moveColumn={moveColumn}
-                                                deleteColumn={confirmDeleteColumn}
-                                            />
+                                            <Column columnId={column.id} title={column.title} isManager={isManager} />
                                         </Box>
                                     )}
                                 </Draggable>
@@ -125,7 +108,6 @@ const Board = ({ boardId, isManager }) => {
             </DragDropContext>
             <PermissionDeniedModal open={modalOpen} onClose={() => setModalOpen(false)} />
             <ColumnNameModal open={columnModalOpen} onClose={() => setColumnModalOpen(false)} onSubmit={handleAddColumn} />
-            <DeleteColumnModal open={deleteColumnModalOpen} onClose={() => setDeleteColumnModalOpen(false)} onDelete={() => handleDeleteColumn(columnToDelete)} />
         </Box>
     );
 };
