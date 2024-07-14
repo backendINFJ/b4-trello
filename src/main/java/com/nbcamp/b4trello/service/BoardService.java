@@ -39,7 +39,9 @@ public class BoardService {
     @Transactional
     public BoardResponseDto createBoard(BoardRequestDto requestDto, UserDetailsImpl userDetails) {
         User user = userDetails.getUser();
-        if (user != null) {
+        if (user == null) {
+            throw new RuntimeException(ErrorMessageEnum.BOARD_NOT_UNAUTHORIZED.getMessage());
+        } else {
             Board board = Board.builder()
                     .boardName(requestDto.getBoardName())
                     .description(requestDto.getDescription())
@@ -55,8 +57,6 @@ public class BoardService {
             userBoardRepository.save(userBoard);
 
             return new BoardResponseDto(board);
-        } else {
-            throw new RuntimeException(ErrorMessageEnum.BOARD_NOT_UNAUTHORIZED.getMessage());
         }
     }
 
@@ -110,9 +110,12 @@ public class BoardService {
      */
 
     @Transactional
-    public void deleteBoard(Long boardId, UserBoard userBoard) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new RuntimeException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage()));
+    public void deleteBoard(Long boardId, UserDetailsImpl userDetails) {
+
+        User user = userDetails.getUser();
+        Board board = findById(boardId);
+        UserBoard userBoard = userBoardRepository.findByUserAndBoard(user,board)
+                .orElseThrow(() -> new RuntimeException(ErrorMessageEnum.BOARD_NOT_UNAUTHORIZED.getMessage()));
 
         if (!userBoard.getUserType().equals(UserType.MANAGER)) {
             throw new RuntimeException(ErrorMessageEnum.USER_NOT_AUTHORIZED.getMessage());

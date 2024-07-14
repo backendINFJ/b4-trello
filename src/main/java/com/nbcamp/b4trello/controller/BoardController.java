@@ -4,15 +4,12 @@ import com.nbcamp.b4trello.dto.*;
 import com.nbcamp.b4trello.entity.Board;
 import com.nbcamp.b4trello.entity.User;
 import com.nbcamp.b4trello.entity.UserBoard;
-import com.nbcamp.b4trello.entity.UserType;
 import com.nbcamp.b4trello.repository.UserBoardRepository;
 import com.nbcamp.b4trello.repository.UserRepository;
 import com.nbcamp.b4trello.security.UserDetailsImpl;
 import com.nbcamp.b4trello.service.BoardService;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -39,7 +36,7 @@ public class BoardController {
      * @param boardRequestDto 보드생성 요청 데이터
      * @return 201 OK,"보드 생성 완료" 보드 생성
      */
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<CommonResponse<BoardResponseDto>> createBoard(
             @AuthenticationPrincipal UserDetailsImpl userDetails, @Valid @RequestBody BoardRequestDto boardRequestDto) {
 
@@ -81,14 +78,12 @@ public class BoardController {
      * @return 200 OK, "보드 수정 성공", 수정된 보드 반환
      */
 
-    @PatchMapping("/{boardId}")
+    @PatchMapping("/{board-id}")
     public ResponseEntity<CommonResponse<BoardResponseDto>> updateBoard(
-            @AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long boardId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable("board-id") Long boardId,
             @Valid @RequestBody BoardRequestDto boardRequestDto) {
 
-        User user = userDetails.getUser();
-        Board board = boardService.findById(boardId);
-        UserBoard userBoard = userBoardRepository.findByUserAndBoard(user, board)
+        UserBoard userBoard = userBoardRepository.findByUserAndBoard(userDetails.getUser(), boardService.findById(boardId))
                 .orElseThrow(() -> new RuntimeException(ErrorMessageEnum.BOARD_NOT_FAILEINVIATED.getMessage()));
 
         BoardResponseDto boardResponseDto = boardService.updateBoard(boardId, boardRequestDto, userBoard);
@@ -106,16 +101,11 @@ public class BoardController {
      * @return 200 OK, "보드 삭제 성공", 보드의 모든 데이터 삭제
      */
 
-    @DeleteMapping("/{boardId}")
-    public ResponseEntity<CommonResponse<String>> deleteBoard(@PathVariable Long boardId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        User user = userDetails.getUser();
-        Board board = boardService.findById(boardId);
-        UserBoard userBoard = userBoardRepository.findByUserAndBoard(user, board)
-                .orElseThrow(() -> new RuntimeException(ErrorMessageEnum.BOARD_NOT_UNAUTHORIZED.getMessage()));
-
-        boardService.deleteBoard(boardId, userBoard);
+    @DeleteMapping("/{board-id}")
+    public ResponseEntity<CommonResponse<String>> deleteBoard(
+            @PathVariable("board-id") Long boardId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        boardService.deleteBoard(boardId, userDetails);
 
         CommonResponse<String> response = CommonResponse.<String>builder()
                 .responseEnum(ResponseEnum.DELETE_BOARD)
@@ -129,9 +119,9 @@ public class BoardController {
      * @return 200 OK, "해당 보드에 사용자 초대 완료", 해당 보드에 사용자 초대 후 권한 생성
      */
 
-    @PostMapping("/{boardId}/invitation")
+    @PostMapping("/{board-id}/invitation")
     public ResponseEntity<CommonResponse<String>> inviteUser(
-            @AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long boardId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable("board-id") Long boardId,
             @RequestBody BoardInviationRequestDto requestDto) {
 
         User user = userDetails.getUser();
