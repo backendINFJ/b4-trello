@@ -31,19 +31,29 @@ public class BoardService {
     /**
      * 보드 생성 메서드
      *
-     * @param userBoard 유저의 권한을 담고있는 객체
+     * @param userDetails 유저의 권한을 담고있는 객체
      * @param requestDto  보드 생성 요청 데이터를 담고 있는 객체
      * @return 권한이 있는경우 보드를 생성, 없는 경우 RuntimeException 발생
      */
 
     @Transactional
-    public BoardResponseDto createBoard(BoardRequestDto requestDto, UserBoard userBoard) {
-        if (userBoard.getUserType() == UserType.MANAGER) {
+    public BoardResponseDto createBoard(BoardRequestDto requestDto, UserDetailsImpl userDetails) {
+        User user = userDetails.getUser();
+        if (user != null) {
             Board board = Board.builder()
                     .boardName(requestDto.getBoardName())
                     .description(requestDto.getDescription())
                     .build();
             boardRepository.save(board);
+
+            // UserBoard에 사용자와 보드 관계 저장
+            UserBoard userBoard = UserBoard.builder()
+                    .user(user)
+                    .board(board)
+                    .userType(UserType.MANAGER) // 예시로 MANAGER 권한 부여
+                    .build();
+            userBoardRepository.save(userBoard);
+
             return new BoardResponseDto(board);
         } else {
             throw new RuntimeException(ErrorMessageEnum.BOARD_NOT_UNAUTHORIZED.getMessage());
@@ -59,10 +69,9 @@ public class BoardService {
      */
 
     @Transactional(readOnly = true)
-    public List<BoardResponseDto> getAllBoards(User user) {
-        List<UserBoard> userBoards = userBoardRepository.findByUserId(user.getId());
-        return userBoards.stream()
-                .map(UserBoard::getBoard)
+    public List<BoardResponseDto> getAllBoards() {
+        List<Board> boards = boardRepository.findAll();
+        return boards.stream()
                 .map(BoardResponseDto::new)
                 .toList();
     }
@@ -70,9 +79,9 @@ public class BoardService {
     /**
      * 보드 수정 메서드
      *
-     * @param boardId 수정할 보드의 ID
+     * @param boardId    수정할 보드의 ID
      * @param requestDto 수정할 객체
-     * @param userBoard 유저 정보 객체
+     * @param userBoard  유저 정보 객체
      * @return 수정된 보드를 BoardResponse 반환
      * @throws RuntimeException 수정 권한이 없거나, 보드가 존재하지 않는 경우 예외 발생
      */
@@ -87,7 +96,7 @@ public class BoardService {
         }
 
         if (!userBoard.getUserType().equals(UserType.MANAGER)) {
-            throw new RuntimeException("수정할 권한이 없습니다.");
+            throw new RuntimeException(ErrorMessageEnum.USER_NOT_AUTHORIZED.getMessage());
         }
 
         board.update(requestDto);
@@ -96,7 +105,6 @@ public class BoardService {
     }
 
     /**
-     *
      * @param boardId, userBoard를 통해 삭제 권한, 보드 아이디 확인
      * @return 확인된 정보를 통해 보드 삭제
      */
@@ -107,53 +115,48 @@ public class BoardService {
                 .orElseThrow(() -> new RuntimeException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage()));
 
         if (!userBoard.getUserType().equals(UserType.MANAGER)) {
-            throw new RuntimeException("삭제할 권한이 없습니다.");
+            throw new RuntimeException(ErrorMessageEnum.USER_NOT_AUTHORIZED.getMessage());
         }
 
         boardRepository.delete(board);
     }
 
     /**
-     *
      * @param userBoard 유저 권한 체크 MANAGER or USer
-     * @param id -> 해당 보드 아이디
      * @param userEmail -> 사용자 초대
      * @return 사용자 초대 완료
      */
     @Transactional
-    public String inviteUser(UserBoard userBoard, Long id, String userEmail) {
+    public String inviteUser(UserBoard userBoard, Long boardId, String userEmail) {
 
-        if (userBoard.getUserType() == UserType.USER) {
+        if (userBoard.getUserType() != UserType.MANAGER) {
             throw new RuntimeException(ErrorMessageEnum.BOARD_NOT_INVITED.getMessage());
         }
 
-        Board board = boardRepository.findById(id).orElseThrow();
-        Optional<UserBoard> userBoardOptional = userBoardRepository.findByUserEmail(userEmail);
 
-        // 이미 초대 된 사용자를 초대 한 경우
-        if (userBoardOptional.isPresent()) {
-            throw new RuntimeException(ErrorMessageEnum.BOARD_NOT_INVIATION.getMessage());
-        }
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new RuntimeException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage()));
 
-        User invitedUser = userRepository.findByEmail(userEmail).orElseThrow(
-                () -> new RuntimeException(ErrorMessageEnum.USER_NOT_FOUND.getMessage())
-        );
 
-        //수정 바람
-        // 해당 유저쪽 개발되면 리팩토링 예정
-        User changedUser = User.builder().email(invitedUser.getEmail())
-                .password(invitedUser.getPassword())
-                .username(invitedUser.getUsername())
-                // .refreshToken(invitedUser.getRefreshToken())
-                // .role(UserType.UserType_MANAGER) // 튜텨님 질문 통해 해결
+        userRepository.findByEmail(userEmail)
+                .flatMap(user -> userBoardRepository.findByUserAndBoard(user, board))
+                .ifPresent(s -> {
+                    throw new RuntimeException(ErrorMessageEnum.BOARD_NOT_INVIATION.getMessage());
+                });
+
+
+        User invitedUser = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException(ErrorMessageEnum.USER_NOT_FOUND.getMessage()));
+
+        UserBoard newUserBoard = UserBoard.builder()
+                .user(invitedUser)
+                .board(board)
+                .userType(UserType.MANAGER)
                 .build();
 
-        UserBoard inviteUser = UserBoard.builder()
-                .user(changedUser).board(board).build();
+        userBoardRepository.save(newUserBoard);
 
-        userBoardRepository.save(userBoard);
         return userEmail + " 사용자를 초대 완료하였습니다.";
-
     }
 
 
