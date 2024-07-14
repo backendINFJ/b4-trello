@@ -28,8 +28,9 @@ public enum ResponseEnum {
 	ACCESS_MAIL("메일 인증 완료", HttpStatus.OK),
 	DELETE_USER("회원탈퇴 완료", HttpStatus.OK),
 	ACCESS_LOGIN("로그인 성공", HttpStatus.OK),
-	CHARACTER_ENCODING("UTF-8", HttpStatus.OK);
-//	CREATE_CARD("카드 생성 완료", HttpStatus.CREATED); 중복이라 컴파일 에러 발생
+	CHARACTER_ENCODING("UTF-8", HttpStatus.OK),
+	CREATE_COMMENT("댓글 생성 완료",HttpStatus.CREATED),
+	GET_COMMENT("댓글 조회 완성", HttpStatus.OK);
 
 	private final String message;
 	private final HttpStatus httpStatus;
