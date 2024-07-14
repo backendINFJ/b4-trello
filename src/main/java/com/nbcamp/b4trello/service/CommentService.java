@@ -1,5 +1,7 @@
 package com.nbcamp.b4trello.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,13 @@ public class CommentService {
 	private final CardRepository cardRepository;
 	private final UserRepository userRepository;
 
+	/**
+	 * 댓글 생성
+	 * @param cardId
+	 * @param content
+	 * @param user
+	 * @return
+	 */
 	@Transactional
 	public CommentResponseDto createComment(long cardId, String content, User user) {
 		Card card = cardRepository.findById(cardId).orElseThrow(
@@ -38,4 +47,20 @@ public class CommentService {
 		return new CommentResponseDto(comment);
 	}
 
+	/**
+	 * 댓글 조회
+	 * @param cardId
+	 * @param userId
+	 * @return
+	 */
+	public List<CommentResponseDto> getComments(long cardId, Long userId) {
+		if(!cardRepository.existsById(cardId))
+			throw new IllegalArgumentException(ErrorMessageEnum.CARD_NOT_FOUND.getMessage());
+		if(!userRepository.existsById(userId))
+			throw new IllegalArgumentException(ErrorMessageEnum.USER_NOT_FOUND.getMessage());
+
+		return commentRepository.findAllByCardId(cardId).stream()
+			.map(CommentResponseDto::new)
+			.toList();
+	}
 }
