@@ -8,19 +8,21 @@ import lombok.Getter;
 
 @Getter
 public class CardResponseDto {
-	private long id;
-	private String title;
-	private String content;
-	private long columnId;
-	private long userId;
-	private LocalDate dueDate;
+	private final long id;
+	private final long userId;
+	private final long columnId;
+	private final String title;
+	private final String content;
+	private final String manager;
+	private final LocalDate dueDate;
 
 	public CardResponseDto(Card card) {
 		this.id = card.getId();
+		userId = card.getUser().getId();
+		columnId = card.getColumn().getColumnId();
 		this.title = card.getTitle();
 		this.content = card.getContent();
-		columnId = card.getColumn().getId();
-		userId = card.getUser().getId();
+		manager = card.getManager();
 		dueDate = card.getDueDate();
 	}
 }

@@ -34,8 +34,8 @@ public class Card {
 	private String content;
 
 	@OnDelete(action = OnDeleteAction.CASCADE)
-//	@ManyToOne(fetch = FetchType.LAZY)
-//	private Column column;
+	@ManyToOne(fetch = FetchType.LAZY)
+	private Columns column;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private User user;
@@ -45,7 +45,7 @@ public class Card {
 	private LocalDate dueDate;
 
 	@Builder
-	public Card(Column column, CardRequestDto requestDto, User user) {
+	public Card(Columns column, CardRequestDto requestDto, User user) {
 		this.column = column;
 		this.user = user;
 		this.manager = requestDto.getManager();
@@ -62,7 +62,7 @@ public class Card {
 
 	}
 
-	public void move(Column column) {
+	public void move(Columns column) {
 		this.column = column;
 	}
 }

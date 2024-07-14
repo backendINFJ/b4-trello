@@ -10,8 +10,6 @@ public class CardRequestDto {
 	@NotEmpty
 	private String title;
 	private String content;
-	@NotEmpty
-	private long columnId;
 	private long userId;
 	private String manager;
 	private LocalDate dueDate;

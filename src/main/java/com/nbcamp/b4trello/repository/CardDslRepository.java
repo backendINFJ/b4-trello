@@ -6,6 +6,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import com.nbcamp.b4trello.entity.Card;
+import com.nbcamp.b4trello.entity.QBoard;
+import com.nbcamp.b4trello.entity.QCard;
+import com.nbcamp.b4trello.entity.QColumns;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -19,15 +22,13 @@ public class CardDslRepository {
 	private final JPAQueryFactory jpaQueryFactory;
 
 	QCard card = QCard.card;
-	QBoard board = QBoard.borad;
-	QColumn column = QColumn.column;
+	QBoard board = QBoard.board;
+	QColumns column = QColumns.columns;
 
 	public List<Card> getCards(Sort sort, long boardId) {
 
 		// 정렬 조건을 가져옴
 		OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sort, card);
-
-		// OrderSpecifier<?> orderSpecifier = new OrderSpecifier<>(Order.DESC, post.createdAt);
 
 		return jpaQueryFactory.select(card)
 			.from(card)

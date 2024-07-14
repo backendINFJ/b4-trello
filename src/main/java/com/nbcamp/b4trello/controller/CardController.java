@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -24,7 +25,7 @@ import com.nbcamp.b4trello.service.CardService;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-@RequestMapping("/column/{column}/cards")
+@RequestMapping("/columns/{column-id}/cards")
 @RestController
 public class CardController {
 
@@ -39,7 +40,7 @@ public class CardController {
 	 */
 	@PostMapping
 	public ResponseEntity<CommonResponse<CardResponseDto>> createCard(
-		@PathVariable("column") long columnId,
+		@PathVariable("column-id") long columnId,
 		@RequestBody CardRequestDto cardRequestDto,
 		@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
@@ -56,9 +57,9 @@ public class CardController {
 	 * @param cardId 조회할 카드 아아디
 	 * @return CardResponseDto 반환
 	 */
-	@GetMapping("/{card}")
+	@GetMapping("/{card-id}")
 	public ResponseEntity<CommonResponse<CardResponseDto>> getCard(
-		@PathVariable("card") long cardId) {
+		@PathVariable("card-id") long cardId) {
 
 		CardResponseDto responseDto = cardService.getCard(cardId);
 		return ResponseEntity.ok(
@@ -76,15 +77,15 @@ public class CardController {
 	 * @param requestDto
 	 * @return
 	 */
-	@PutMapping("/{card}")
+	@PatchMapping("/{card-id}")
 	public ResponseEntity<CommonResponse<CardResponseDto>> updateCard(
-		@PathVariable("card") long cardId,
-		@PathVariable("column") long columnId,
+		@PathVariable("card-id") long cardId,
+		@PathVariable("column-id") long columnId,
 		@AuthenticationPrincipal UserDetailsImpl userDetails,
 		@RequestBody CardUpdateRequestDto requestDto) {
 
 		CardResponseDto responseDto =
-			cardService.updateCard(columnId, cardId, userDetails.getUser(), requestDto);
+			cardService.updateCard(cardId, columnId, userDetails.getUser(), requestDto);
 		return ResponseEntity.ok(
 			CommonResponse.<CardResponseDto>builder()
 				.responseEnum(ResponseEnum.UPDATE_CARD)
@@ -95,15 +96,15 @@ public class CardController {
 	/**
 	 * 컬럼 위치 변경
 	 * @param cardId
-	 * @param columnId
+	 * @param moveColumnId
 	 * @return
 	 */
-	@PutMapping("/{card}/move")
+	@PatchMapping("/{card-id}/move")
 	public ResponseEntity<CommonResponse<CardResponseDto>> moveCard(
-		@PathVariable("card") long cardId,
-		@PathVariable("column") long columnId) {
+		@PathVariable("card-id") long cardId,
+		@RequestParam("move") long moveColumnId) {
 
-		CardResponseDto responseDto = cardService.moveCard(columnId, cardId);
+		CardResponseDto responseDto = cardService.moveCard(moveColumnId, cardId);
 
 		return ResponseEntity.ok(
 			CommonResponse.<CardResponseDto>builder()
@@ -119,10 +120,10 @@ public class CardController {
 	 * @param userDetails
 	 * @return
 	 */
-	@DeleteMapping("/{card}")
+	@DeleteMapping("/{card-id}")
 	public ResponseEntity<CommonResponse<CardResponseDto>> deleteCard(
-		@PathVariable("card") long cardId,
-		@PathVariable("column") long columnId,
+		@PathVariable("card-id") long cardId,
+		@PathVariable("column-id") long columnId,
 		@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
 		cardService.deleteCard(cardId, columnId, userDetails.getUser());
@@ -134,6 +135,13 @@ public class CardController {
 				.build());
 	}
 
+	/**
+	 * 파라미터로 받은 필드명으로 정렬해서 전체 조회
+	 * @param sortBy id, manager, column 조회가능
+	 * @param boardId
+	 * @param userDetails
+	 * @return
+	 */
 	@GetMapping
 	public ResponseEntity<CommonResponse<CardListResponseDto>> getCards(
 		@RequestParam("sort") String sortBy, @RequestParam("board") long boardId,
@@ -143,7 +151,7 @@ public class CardController {
 
 		return ResponseEntity.ok(
 			CommonResponse.<CardListResponseDto>builder()
-				.responseEnum(ResponseEnum.DELETE_CARD)
+				.responseEnum(ResponseEnum.GET_CARD)
 				.data(responseDto)
 				.build());
 	}
