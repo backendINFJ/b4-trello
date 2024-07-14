@@ -10,10 +10,6 @@ import java.util.List;
 @Setter
 public class ColumnRequestDto {
     private Long boardId;
-    private Long columnId;
+    private List<Long> columnIds;
     private String columnTitle;
-
-    public List<Long> getColumnIds() {
-        return Collections.singletonList(columnId);
-    }
 }
