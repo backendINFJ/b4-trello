@@ -16,6 +16,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
@@ -52,21 +53,21 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public Authentication attemptAuthentication(
             HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         ObjectMapper objectMapper = new ObjectMapper();
-        AuthRequestDto authRequestDTO = null;
+        AuthRequestDto authRequestDto = null;
         try{
-            authRequestDTO = objectMapper.readValue(request.getInputStream(), AuthRequestDto.class);
+            authRequestDto = objectMapper.readValue(request.getInputStream(), AuthRequestDto.class);
 
-            Optional<User> user = userRepository.findByUsername(authRequestDTO.getUsername());
+            Optional<User> user = userRepository.findByUsername(authRequestDto.getUsername());
             if(null != user) {
                 if(user.get().getStatus() == StatusEnum.DENIED){
                     throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.USER_DENIND));
                 }
             }
-            if (!bCryptPasswordEncoder.matches(authRequestDTO.getPassword(),user.get().getPassword())) {
+            if (!bCryptPasswordEncoder.matches(authRequestDto.getPassword(),user.get().getPassword())) {
                 throw new IllegalArgumentException(String.valueOf(ErrorMessageEnum.PASSWORD_BAD_REQUEST));
             }
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    authRequestDTO.getUsername(),authRequestDTO.getPassword());
+                    authRequestDto.getUsername(),authRequestDto.getPassword());
             Authentication authentication = authenticationManager.authenticate(authenticationToken);
             return authentication;
         } catch (IOException e) {
@@ -83,19 +84,27 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .username(userDetails.getUsername())
                 .refreshToken(jwtToken.getRefreshToken())
                 .build();
-        refreshTokenRepository.save(refreshToken);
-        response.setHeader(JwtEnum.ACCESS_TOKEN.getValue(), jwtToken.getAccessToken());
-        response.setHeader(JwtEnum.REFRESH_TOKEN.getValue(), jwtToken.getRefreshToken());
-        response.setStatus(ResponseEnum.CHARACTER_ENCODING.getHttpStatus().value());
-        // 로그인 성공 메세지 반환
-        response.setCharacterEncoding(ResponseEnum.CHARACTER_ENCODING.getMessage());
-        response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEnum.ACCESS_LOGIN.getMessage()));
-    }
+            vaildateToken(refreshToken);
+            refreshTokenRepository.save(refreshToken);
+            response.setHeader(JwtEnum.ACCESS_TOKEN.getValue(), jwtToken.getAccessToken());
+            response.setHeader(JwtEnum.REFRESH_TOKEN.getValue(), jwtToken.getRefreshToken());
+            response.setStatus(ResponseEnum.CHARACTER_ENCODING.getHttpStatus().value());
+            // 로그인 성공 메세지 반환
+            response.setCharacterEncoding(ResponseEnum.CHARACTER_ENCODING.getMessage());
+            response.getWriter().write(new ObjectMapper().writeValueAsString(
+                    ResponseEnum.ACCESS_LOGIN.getMessage()));
 
+    }
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         response.setStatus(401);
         response.setCharacterEncoding(ResponseEnum.CHARACTER_ENCODING.getMessage());
         response.getWriter().write(ErrorMessageEnum.LOGIN_FAILED.getMessage());
+    }
+    public void vaildateToken(RefreshToken token){
+        if (refreshTokenRepository.existsByUsername(token.getUsername())) {
+            refreshTokenRepository.delete(
+                    refreshTokenRepository.findByUsername(token.getUsername()).get());
+        }
     }
 }
