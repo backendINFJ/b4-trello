@@ -1,68 +1,73 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Paper, Typography } from '@mui/material';
-import { getCards, createCard, deleteCard, updateCardOrder } from '../api/cardApi';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+// src/components/Card.js
 
-const Card = ({ columnId }) => {
-    const [cards, setCards] = useState([]);
+import React, { useState } from 'react';
+import { Box, Paper, Typography, IconButton, Menu, MenuItem, Modal, TextField, Button } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
+import { updateCard, deleteCard } from '../api/cardApi';
 
-    useEffect(() => {
-        const fetchCards = async () => {
-            const data = await getCards(columnId);
-            setCards(data);
-        };
-        fetchCards();
-    }, [columnId]);
+const Card = ({ card, columnId, isManager, onUpdate, onDelete }) => {
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editedTitle, setEditedTitle] = useState(card.title);
+    const [editedContent, setEditedContent] = useState(card.content);
 
-    const handleAddCard = async () => {
-        const newCard = await createCard(columnId, { title: 'New Card' });
-        setCards([...cards, newCard]);
+    const handleMenuClick = (event) => {
+        setAnchorEl(event.currentTarget);
     };
 
-    const handleDeleteCard = async (cardId) => {
-        await deleteCard(columnId, cardId);
-        setCards(cards.filter(card => card.id !== cardId));
+    const handleMenuClose = () => {
+        setAnchorEl(null);
     };
 
-    const onDragEnd = async (result) => {
-        if (!result.destination) return;
+    const handleEdit = () => {
+        setEditModalOpen(true);
+        handleMenuClose();
+    };
 
-        const updatedCards = [...cards];
-        const [movedCard] = updatedCards.splice(result.source.index, 1);
-        updatedCards.splice(result.destination.index, 0, movedCard);
+    const handleDelete = async () => {
+        await deleteCard(columnId, card.id);
+        onDelete(card.id);
+        handleMenuClose();
+    };
 
-        setCards(updatedCards);
-        await updateCardOrder(columnId, updatedCards.map((card, index) => ({ ...card, order: index })));
+    const handleSave = async () => {
+        const updatedCard = await updateCard(columnId, card.id, { title: editedTitle, content: editedContent });
+        onUpdate(updatedCard.data);
+        setEditModalOpen(false);
     };
 
     return (
-        <Box>
-            <Button onClick={handleAddCard}>Add Card</Button>
-            <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="cards" direction="vertical">
-                    {(provided) => (
-                        <Box {...provided.droppableProps} ref={provided.innerRef}>
-                            {cards.map((card, index) => (
-                                <Draggable key={card.id} draggableId={card.id} index={index}>
-                                    {(provided) => (
-                                        <Paper
-                                            ref={provided.innerRef}
-                                            {...provided.draggableProps}
-                                            {...provided.dragHandleProps}
-                                            sx={{ margin: 2, padding: 2 }}
-                                        >
-                                            <Typography variant="body1">{card.title}</Typography>
-                                            <Button onClick={() => handleDeleteCard(card.id)}>Delete</Button>
-                                        </Paper>
-                                    )}
-                                </Draggable>
-                            ))}
-                            {provided.placeholder}
-                        </Box>
-                    )}
-                </Droppable>
-            </DragDropContext>
-        </Box>
+        <Paper sx={{ margin: 1, padding: 2, backgroundColor: '#ffffff' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="body1" sx={{ flexGrow: 1 }}>{card.title}</Typography>
+                {isManager && (
+                    <>
+                        <IconButton onClick={handleMenuClick} size="small">
+                            <MoreVertIcon />
+                        </IconButton>
+                        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                            <MenuItem onClick={handleEdit}>Edit</MenuItem>
+                            <MenuItem onClick={handleDelete}>Delete</MenuItem>
+                        </Menu>
+                    </>
+                )}
+            </Box>
+            <Typography variant="body2">{card.content}</Typography>
+            <Modal open={editModalOpen} onClose={() => setEditModalOpen(false)}>
+                <Box sx={{ p: 4, bgcolor: 'white', borderRadius: 1, width: 300, mx: 'auto', mt: '20vh', textAlign: 'center', position: 'relative' }}>
+                    <IconButton sx={{ position: 'absolute', right: 8, top: 8 }} onClick={() => setEditModalOpen(false)}>
+                        <CloseIcon />
+                    </IconButton>
+                    <Typography variant="h6">Edit Card</Typography>
+                    <TextField value={editedTitle} onChange={(e) => setEditedTitle(e.target.value)} fullWidth margin="normal" label="Card Title" />
+                    <TextField value={editedContent} onChange={(e) => setEditedContent(e.target.value)} fullWidth margin="normal" label="Card Content" />
+                    <Button variant="contained" color="primary" onClick={handleSave} sx={{ mt: 2 }}>Save</Button>
+                </Box>
+            </Modal>
+        </Paper>
     );
 };
 

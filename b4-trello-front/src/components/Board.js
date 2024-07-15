@@ -57,12 +57,13 @@ const Board = ({ boardId, boardTitle, boardDescription, isManager, isSample }) =
         setColumns(columns.filter(column => column.id !== columnId));
     };
 
-    const moveColumn = (fromIndex, toIndex) => {
-        if (toIndex < 0 || toIndex >= columns.length) return;
-        const updatedColumns = [...columns];
-        const [movedColumn] = updatedColumns.splice(fromIndex, 1);
-        updatedColumns.splice(toIndex, 0, movedColumn);
+    const moveColumn = async (result) => {
+        if (!result.destination) return;
+        const updatedColumns = Array.from(columns);
+        const [removed] = updatedColumns.splice(result.source.index, 1);
+        updatedColumns.splice(result.destination.index, 0, removed);
         setColumns(updatedColumns);
+        await updateColumnSequence(boardId, updatedColumns.map(column => column.id));
     };
 
     const handleBoardNameChange = async () => {
@@ -95,7 +96,7 @@ const Board = ({ boardId, boardTitle, boardDescription, isManager, isSample }) =
                     <MenuItem onClick={() => setColumnModalOpen(true)}>Create Column</MenuItem>
                 </Menu>
             </Box>
-            <DragDropContext onDragEnd={() => { }}>
+            <DragDropContext onDragEnd={moveColumn}>
                 <Droppable droppableId={`droppable-${boardId}`} direction="horizontal">
                     {(provided) => (
                         <Box {...provided.droppableProps} ref={provided.innerRef} sx={{ display: 'flex', overflowX: 'auto' }}>

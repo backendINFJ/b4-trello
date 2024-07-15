@@ -1,3 +1,5 @@
+// src/pages/MainPage.js
+
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Typography, Modal, Snackbar, Alert, IconButton, Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -114,7 +116,7 @@ const MainPage = ({ user }) => {
         setSnackbarOpen(false);
     };
 
-    const handleMenuClick = (event, boardId) => {
+    const handleMenuOpen = (event, boardId) => {
         setMenuAnchorEl(event.currentTarget);
         setSelectedBoardId(boardId);
     };
@@ -127,32 +129,37 @@ const MainPage = ({ user }) => {
     return (
         <Box>
             <Header user={user} />
-            <Box sx={{ display: 'flex', padding: 2 }}>
+            <Box sx={{ display: 'flex', overflowX: 'auto', padding: 2 }}>
                 <Box sx={{ minWidth: '300px', padding: 2, marginRight: 2, backgroundColor: '#f4f4f4', borderRadius: 1 }}>
                     <Typography variant="h6">Board List</Typography>
                     {boards.map((board) => (
                         <Box key={board.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
                             <Typography>{board.boardName}</Typography>
-                            <IconButton onClick={(event) => handleMenuClick(event, board.id)}>
-                                <MoreVertIcon />
-                            </IconButton>
+                            {user && user.role === 'MANAGER' && (
+                                <>
+                                    <IconButton onClick={(event) => handleMenuOpen(event, board.id)}>
+                                        <MoreVertIcon />
+                                    </IconButton>
+                                    <Menu
+                                        anchorEl={menuAnchorEl}
+                                        open={Boolean(menuAnchorEl && selectedBoardId === board.id)}
+                                        onClose={handleMenuClose}
+                                    >
+                                        <MenuItem onClick={() => handleUpdateBoard(board.id, { boardName: 'New Name', description: board.description })}>
+                                            Edit Board
+                                        </MenuItem>
+                                        <MenuItem onClick={() => handleDeleteBoard(board.id)}>Delete Board</MenuItem>
+                                    </Menu>
+                                </>
+                            )}
                         </Box>
                     ))}
-                    <Menu
-                        anchorEl={menuAnchorEl}
-                        open={Boolean(menuAnchorEl)}
-                        onClose={handleMenuClose}
-                    >
-                        <MenuItem onClick={() => handleUpdateBoard(selectedBoardId, { boardName: 'New Name', description: '' })}>Edit Board</MenuItem>
-                        <MenuItem onClick={() => setNewBoardOpen(true)}>Create Column</MenuItem>
-                        <MenuItem onClick={() => handleDeleteBoard(selectedBoardId)}>Delete Board</MenuItem>
-                    </Menu>
                     {user && user.role === 'MANAGER' && (
                         <Button onClick={() => setNewBoardOpen(true)} sx={{ marginTop: 2 }}>+ Create Board</Button>
                     )}
                 </Box>
                 {boards.length > 0 ? (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+                    <Box sx={{ display: 'flex', overflowX: 'auto' }}>
                         {boards.map((board) => (
                             <Board
                                 key={board.id}
