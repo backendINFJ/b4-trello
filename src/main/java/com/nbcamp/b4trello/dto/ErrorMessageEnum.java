@@ -25,6 +25,7 @@ public enum ErrorMessageEnum {
 	JWT_CLAIMS_EMPTY("토큰 정보가 없습니다."),
 	MAIL_BAD_REQUEST("잘못된 인증번호입니다."),
 	ALREADY_MAIL_ACCESS("이미 인증을 받은 계정입니다."),
+	ALREADY_MAIL_UNACTIVE("이메일 인증이 완료되지 않았습니다"),
 	//board error
 	BOARD_NOT_FOUND("보드를 찾을 수 없습니다."),
 	BOARD_ACCESS_DENIED("보드 접근이 거부되었습니다."),
@@ -33,6 +34,7 @@ public enum ErrorMessageEnum {
 	BOARD_NOT_INVIATION("이미 초대된 사용자 입니다"),
 	BOARD_NOT_INVITED("초대할 권한이 없습니다"),
 	BOARD_NOT_FAILEINVIATED("권한이 없거나,보드가 존재하지 않습니다"),
+	BOARD_ALREADY_INVITED("이미 현재 보드에 초대되었습니다."),
 
 	// Column errors
 	COLUMN_NOT_FOUND("컬럼을 찾을 수 없습니다."),

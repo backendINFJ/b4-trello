@@ -7,6 +7,7 @@ import com.nbcamp.b4trello.entity.Board;
 import com.nbcamp.b4trello.entity.User;
 import com.nbcamp.b4trello.entity.UserBoard;
 import com.nbcamp.b4trello.entity.UserType;
+import com.nbcamp.b4trello.enums.StatusEnum;
 import com.nbcamp.b4trello.repository.BoardRepository;
 import com.nbcamp.b4trello.repository.UserBoardRepository;
 import com.nbcamp.b4trello.repository.UserRepository;
@@ -130,33 +131,36 @@ public class BoardService {
      * @return 사용자 초대 완료
      */
     @Transactional
-    public String inviteUser(UserBoard userBoard, Long boardId, String userEmail) {
-
-        if (userBoard.getUserType() != UserType.MANAGER) {
-            throw new RuntimeException(ErrorMessageEnum.BOARD_NOT_INVITED.getMessage());
-        }
-
-
+    public String inviteUser(UserDetailsImpl userDetails, Long boardId, String userEmail) {
+        User user = userDetails.getUser();
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new RuntimeException(ErrorMessageEnum.BOARD_NOT_FOUND.getMessage()));
 
+        UserBoard userBoard = userBoardRepository.findByUserAndBoard(user, board)
+                .orElseThrow(() -> new RuntimeException(ErrorMessageEnum.BOARD_NOT_UNAUTHORIZED.getMessage()));
 
-        userRepository.findByEmail(userEmail)
-                .flatMap(user -> userBoardRepository.findByUserAndBoard(user, board))
-                .ifPresent(s -> {
-                    throw new RuntimeException(ErrorMessageEnum.BOARD_NOT_INVIATION.getMessage());
-                });
-
+        if (userBoard.getUserType() != UserType.MANAGER) {
+            throw new RuntimeException(ErrorMessageEnum.USER_NOT_AUTHORIZED.getMessage());
+        }
 
         User invitedUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException(ErrorMessageEnum.USER_NOT_FOUND.getMessage()));
 
+        // VERYFICATION 상태인 사용자만 초대 가능하도록 확인
+        if (invitedUser.getStatus() != StatusEnum.VERYFICATION) {
+            throw new RuntimeException(ErrorMessageEnum.ALREADY_MAIL_UNACTIVE.getMessage());
+        }
+
+        boolean alreadyInvited = userBoardRepository.findByUserAndBoard(invitedUser, board).isPresent();
+        if (alreadyInvited) {
+            throw new RuntimeException(ErrorMessageEnum.BOARD_ALREADY_INVITED.getMessage());
+        }
+
         UserBoard newUserBoard = UserBoard.builder()
                 .user(invitedUser)
                 .board(board)
-                .userType(UserType.MANAGER)
+                .userType(UserType.MANAGER) // 초대받은 사용자에게는 MEMBER 권한을 부여
                 .build();
-
         userBoardRepository.save(newUserBoard);
 
         return userEmail + " 사용자를 초대 완료하였습니다.";
