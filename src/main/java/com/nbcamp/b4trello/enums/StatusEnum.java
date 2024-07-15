@@ -4,6 +4,7 @@ public enum StatusEnum {
     ACTIVE("Active"),
     VERYFICATION("Verify"),
     DENIED("Denied"),
+
     ROLE_USER("Role User");
 
     private final String userStatus;
