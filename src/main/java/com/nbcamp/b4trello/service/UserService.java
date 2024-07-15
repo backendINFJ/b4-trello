@@ -51,26 +51,26 @@ public class UserService {
      */
     @Transactional
     public UserUpdateResponseDto updateUser(Long userId, UserUpdateRequestDto updateDTO, User user) {
-
+            if(userRepository.findById(userId).isEmpty()) {
+                throw new IllegalArgumentException(ErrorMessageEnum.USER_NOT_FOUND.getMessage());
+            }
             if(!user.getId().equals(userId)){
                 throw new IllegalArgumentException(ErrorMessageEnum.PRIVATE_USER.getMessage());
             }
             if(bCryptPasswordEncoder.matches(updateDTO.getPassword(),user.getPassword())){
                 throw new IllegalArgumentException(ErrorMessageEnum.SAME_PASSWORD.getMessage());
             }
-
-            UserUpdateRequestDto updateUser = null;
-             updateUser.builder()
-                    .nickname(updateDTO.getNickname())
-                    .password(updateDTO.getPassword())
-                    .build();
+     
 
 
         Optional<User> originUser = userRepository.findById(userId);
         if (originUser.isEmpty()) {
             throw new IllegalArgumentException(ErrorMessageEnum.USER_NOT_FOUND.getMessage());
         }
-        originUser.get().updateUser(updateUser);
+        originUser.get().updateUser(UserUpdateRequestDto.builder()
+                .nickname(updateDTO.getNickname())
+                .password(updateDTO.getPassword())
+                .build());
         return UserUpdateResponseDto.builder().nickname(originUser.get().getNickname()).build();
     }
 
