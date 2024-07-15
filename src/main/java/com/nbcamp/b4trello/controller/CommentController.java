@@ -67,7 +67,7 @@ public class CommentController {
 
 		return ResponseEntity.ok(
 			CommonResponse.<List<CommentResponseDto>>builder()
-				.responseEnum(ResponseEnum.CREATE_COMMENT)
+				.responseEnum(ResponseEnum.GET_COMMENT)
 				.data(responseDto)
 				.build()
 		);
