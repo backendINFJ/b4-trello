@@ -11,7 +11,6 @@ import com.nbcamp.b4trello.service.AuthService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,105 +20,82 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /**
-     * SecurityConfig 필드값
-     */
-    private final JwtProvider jwtUtil;
-    private final AuthenticationConfiguration authenticationConfiguration;
+    private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final AuthenticationConfiguration authenticationConfiguration;
 
-
-    /**
-     * 생성자 매서드
-     */
-    public SecurityConfig(JwtProvider jwtUtil,
-            AuthenticationConfiguration authenticationConfiguration, UserRepository userRepository, RefreshTokenRepository refreshTokenRepository) {
-        this.jwtUtil = jwtUtil;
-        this.authenticationConfiguration = authenticationConfiguration;
+    public SecurityConfig(JwtProvider jwtProvider, UserRepository userRepository, RefreshTokenRepository refreshTokenRepository, AuthenticationConfiguration authenticationConfiguration) {
+        this.jwtProvider = jwtProvider;
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.authenticationConfiguration = authenticationConfiguration;
     }
 
-
-    /**
-     * 빈주입
-     */
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager() throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, userRepository,authenticationManager(authenticationConfiguration),bCryptPasswordEncoder(),
-                 refreshTokenRepository);
-        filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtProvider, userRepository, authenticationManager(), refreshTokenRepository);
+        filter.setAuthenticationManager(authenticationManager());
         return filter;
     }
 
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter() {
-        return new JwtAuthorizationFilter(jwtUtil);
+        return new JwtAuthorizationFilter(jwtProvider);
     }
 
-
-    /**
-     * Security 인증, 인가 설정
-     * 커스텀 필터 설정
-     * 서버단 에러 status 핸들러
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthService authService) throws Exception {
-        // CSRF 설정
-        http.csrf((csrf) -> csrf.disable());
-
-        // 기본 설정인 Session 방식은 사용하지 않고 JWT 방식을 사용하기 위한 설정
-        http.sessionManagement((sessionManagement) ->
-                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        );
-
-        http.authorizeHttpRequests((authorizeHttpRequests) ->
-                authorizeHttpRequests
-                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers("/auth/login","/auth/reissue","/users").permitAll()
-
-
-                        // 서버 단에서 에러가 발생시 아래 url이 에러창을 띄워준다
-                        .requestMatchers("/error").permitAll()
-                        .anyRequest().authenticated()
-
-        );
-        //필터중 예외 처리
-        http.exceptionHandling(auth -> {
-            auth.accessDeniedPage("/forbidden");
-            auth.accessDeniedHandler(new CustomAccessDeniedHandler());
-            auth.authenticationEntryPoint(new CustomAuthenticationEntryPoint());
-        });
-
-        http.logout(auth -> auth
+        http.csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                .requestMatchers("/auth/login", "/auth/reissue", "/users").permitAll()
+                .anyRequest().authenticated()
+            )
+            .exceptionHandling(auth -> {
+                auth.accessDeniedPage("/forbidden");
+                auth.accessDeniedHandler(new CustomAccessDeniedHandler());
+                auth.authenticationEntryPoint(new CustomAuthenticationEntryPoint());
+            })
+            .logout(auth -> auth
                 .logoutUrl("/api/auth/logout")
                 .addLogoutHandler(authService)
-                .logoutSuccessHandler(
-                        (((request, response, authentication) -> SecurityContextHolder.clearContext()))));
+                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
+            )
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);
 
-
-
-
-
-        // 필터 관리
-        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);
         return http.build();
+    }
+
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:3003");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
 }

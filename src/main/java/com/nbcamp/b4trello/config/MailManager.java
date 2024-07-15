@@ -19,7 +19,7 @@ public class MailManager {
     /**
      * @String sender 이메일 보내는 사람의 이메일 정보
      */
-    @Value("${MAIL_USERNAME}")
+    @Value("jeasung1894@gmail.com")
     private String sender;
 
     /**

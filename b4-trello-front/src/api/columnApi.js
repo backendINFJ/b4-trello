@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080';
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const getColumns = async (boardId) => {
     try {
@@ -10,9 +10,13 @@ export const getColumns = async (boardId) => {
             },
             params: { boardId }
         });
-        return response.data;
+        if (!response.data) {
+            throw new Error('Invalid response from server');
+        }
+        return response.data.data; // Ensure the data structure is correct
     } catch (error) {
-        throw error.response.data;
+        console.error('Error fetching columns:', error);
+        throw error.response?.data || 'Error fetching columns';
     }
 };
 
@@ -23,9 +27,13 @@ export const createColumn = async (columnData) => {
                 'AccessToken': localStorage.getItem('accessToken'),
             }
         });
-        return response.data;
+        if (!response.data) {
+            throw new Error('Invalid response from server');
+        }
+        return response.data.data;
     } catch (error) {
-        throw error.response.data;
+        console.error('Error creating column:', error);
+        throw error.response?.data || 'Error creating column';
     }
 };
 
@@ -36,9 +44,13 @@ export const deleteColumn = async (columnId) => {
                 'AccessToken': localStorage.getItem('accessToken'),
             }
         });
-        return response.data;
+        if (!response.data) {
+            throw new Error('Invalid response from server');
+        }
+        return response.data.data;
     } catch (error) {
-        throw error.response.data;
+        console.error('Error deleting column:', error);
+        throw error.response?.data || 'Error deleting column';
     }
 };
 
@@ -49,8 +61,12 @@ export const updateColumnSequence = async (boardId, columnIds) => {
                 'AccessToken': localStorage.getItem('accessToken'),
             }
         });
-        return response.data;
+        if (!response.data) {
+            throw new Error('Invalid response from server');
+        }
+        return response.data.data;
     } catch (error) {
-        throw error.response.data;
+        console.error('Error updating column sequence:', error);
+        throw error.response?.data || 'Error updating column sequence';
     }
 };

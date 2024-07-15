@@ -31,7 +31,8 @@ public enum ResponseEnum {
 	ACCESS_LOGIN("로그인 성공", HttpStatus.OK),
 	CHARACTER_ENCODING("UTF-8", HttpStatus.OK),
 	CREATE_COMMENT("댓글 생성 완료",HttpStatus.CREATED),
-	GET_COMMENT("댓글 조회 완성", HttpStatus.OK);
+	GET_COMMENT("댓글 조회 완성", HttpStatus.OK),
+	LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "로그인 실패" );
 
 	private final String message;
 	private final HttpStatus httpStatus;

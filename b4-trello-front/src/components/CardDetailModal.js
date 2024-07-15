@@ -1,113 +1,101 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, Typography, TextField, Button, IconButton } from '@mui/material';
+import { Modal, Box, Typography, Button, TextField, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import { getComments, createComment } from '../api/commentApi';
+import { getComments, createComment, deleteComment } from '../api/commentApi';
 
-const CardDetailModal = ({ open, onClose, card, onUpdate, onDelete }) => {
-    const [title, setTitle] = useState(card.title);
-    const [content, setContent] = useState(card.content);
-    const [comments, setComments] = useState([]);
+const CardDetailModal = ({ open, onClose, cardId, cardName, cardContent, onUpdate, onDelete }) => {
+    const [content, setContent] = useState(cardContent);
     const [newComment, setNewComment] = useState('');
+    const [comments, setComments] = useState([]);
 
     useEffect(() => {
-        const fetchComments = async () => {
-            try {
-                const fetchedComments = await getComments(card.id);
-                setComments(fetchedComments);
-            } catch (error) {
-                console.error('Failed to fetch comments', error);
-            }
-        };
-
         if (open) {
+            const fetchComments = async () => {
+                try {
+                    const data = await getComments(cardId);
+                    setComments(data);
+                } catch (error) {
+                    console.error('Error fetching comments:', error);
+                }
+            };
             fetchComments();
         }
-    }, [open, card.id]);
+    }, [open, cardId]);
 
     const handleUpdate = () => {
-        onUpdate({ ...card, title, content });
+        onUpdate(cardId, content);
     };
 
     const handleDelete = () => {
-        onDelete(card.id);
+        onDelete(cardId);
     };
 
     const handleAddComment = async () => {
-        if (newComment.trim()) {
-            try {
-                const addedComment = await createComment(card.id, newComment);
-                setComments([...comments, addedComment]);
-                setNewComment('');
-            } catch (error) {
-                console.error('Failed to add comment', error);
-            }
+        try {
+            const comment = await createComment(cardId, newComment);
+            setComments([...comments, comment]);
+            setNewComment('');
+        } catch (error) {
+            console.error('Error adding comment:', error);
         }
     };
 
-    const handleDeleteComment = (index) => {
-        setComments(comments.filter((_, i) => i !== index));
+    const handleDeleteComment = async (commentId) => {
+        try {
+            await deleteComment(commentId);
+            setComments(comments.filter(comment => comment.id !== commentId));
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+        }
     };
 
     return (
         <Modal open={open} onClose={onClose}>
-            <Box sx={{
-                p: 4,
-                bgcolor: 'white',
-                borderRadius: 1,
-                width: '400px',
-                mx: 'auto',
-                mt: '10vh',
-                textAlign: 'center',
-                position: 'relative'
-            }}>
+            <Box sx={{ p: 4, bgcolor: 'white', borderRadius: 1, width: 500, mx: 'auto', mt: '10vh', textAlign: 'center', position: 'relative' }}>
                 <IconButton sx={{ position: 'absolute', right: 8, top: 8 }} onClick={onClose}>
                     <CloseIcon />
                 </IconButton>
-                <Typography variant="h6" sx={{ mb: 2 }}>카드 상세</Typography>
-                <TextField
-                    label="Card Name"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    fullWidth
-                    margin="normal"
-                />
+                <Typography variant="h6">카드 상세</Typography>
+                <Typography sx={{ mt: 2, mb: 1 }}>Card Name: {cardName}</Typography>
                 <TextField
                     label="내용 상세"
+                    multiline
+                    rows={4}
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     fullWidth
                     margin="normal"
-                    multiline
-                    rows={4}
                 />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                    <Button variant="contained" color="primary" onClick={handleUpdate}>수정</Button>
-                    <Button variant="contained" color="error" onClick={handleDelete}>삭제</Button>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', mt: 4 }}>
-                    <ChatBubbleOutlineIcon color="primary" />
-                    <Typography variant="body1" sx={{ ml: 1 }}>댓글</Typography>
-                </Box>
-                <Box sx={{ mt: 2, textAlign: 'left' }}>
-                    {comments.map((comment, index) => (
-                        <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                            <Typography variant="body2">{comment.content}</Typography>
-                            <IconButton size="small" onClick={() => handleDeleteComment(index)}>
-                                <CloseIcon fontSize="small" />
-                            </IconButton>
-                        </Box>
-                    ))}
-                </Box>
-                <TextField
-                    label="댓글"
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    fullWidth
-                    margin="normal"
-                />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                    <Button variant="contained" color="primary" onClick={handleAddComment}>댓글 등록</Button>
+                <Button variant="contained" color="primary" onClick={handleUpdate} sx={{ mt: 2, mr: 1 }}>
+                    수정
+                </Button>
+                <Button variant="contained" color="secondary" onClick={handleDelete} sx={{ mt: 2 }}>
+                    삭제
+                </Button>
+                <Box sx={{ mt: 4 }}>
+                    <Typography variant="h6">댓글</Typography>
+                    <TextField
+                        label="댓글 입력"
+                        multiline
+                        rows={2}
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <Button variant="contained" color="primary" onClick={handleAddComment} sx={{ mt: 2 }}>
+                        댓글 등록
+                    </Button>
+                    <Box sx={{ mt: 2 }}>
+                        {comments.map(comment => (
+                            <Box key={comment.id} sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                                <Typography sx={{ flexGrow: 1 }}>{comment.content}</Typography>
+                                <IconButton onClick={() => handleDeleteComment(comment.id)}>
+                                    <CloseIcon />
+                                </IconButton>
+                            </Box>
+                        ))}
+                    </Box>
                 </Box>
             </Box>
         </Modal>

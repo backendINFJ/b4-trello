@@ -1,18 +1,29 @@
 import React, { useState } from 'react';
-import { Modal, Box, Typography, Button, TextField, IconButton } from '@mui/material';
+import { Modal, Box, Typography, Button, TextField, IconButton, Snackbar, Alert } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { createUser } from '../api/userApi'; // 올바르게 임포트
+import { createUser } from '../api/userApi';
 
 const SignUpForm = ({ open, onClose, onSignUp }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
     const [nickname, setNickname] = useState('');
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
 
     const handleSubmit = async () => {
         try {
-            await createUser({ username, password, email, nickname });
+            console.log('Trying to create user with:', { username, password, email, nickname });
+            const response = await createUser({ username, password, email, nickname });
+            console.log('User created successfully:', response);
             onSignUp({ username, password, email, nickname });
+            setSnackbarMessage('회원가입 성공');
+            setSnackbarSeverity('success');
             setUsername('');
             setPassword('');
             setEmail('');
@@ -20,6 +31,10 @@ const SignUpForm = ({ open, onClose, onSignUp }) => {
             onClose();
         } catch (error) {
             console.error('Failed to sign up:', error);
+            setSnackbarMessage(`회원가입 실패: ${error.response.data.message}`);
+            setSnackbarSeverity('error');
+        } finally {
+            setSnackbarOpen(true);
         }
     };
 
@@ -66,6 +81,11 @@ const SignUpForm = ({ open, onClose, onSignUp }) => {
                 <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
                     Sign Up
                 </Button>
+                <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+                    <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
             </Box>
         </Modal>
     );

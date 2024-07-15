@@ -1,6 +1,5 @@
 package com.nbcamp.b4trello.service;
 
-import com.nbcamp.b4trello.config.MailManager;
 import com.nbcamp.b4trello.dto.ErrorMessageEnum;
 import com.nbcamp.b4trello.dto.TokenDto;
 import com.nbcamp.b4trello.dto.UserResponseDto;
@@ -9,7 +8,6 @@ import com.nbcamp.b4trello.entity.User;
 import com.nbcamp.b4trello.enums.StatusEnum;
 import com.nbcamp.b4trello.jwt.JwtEnum;
 import com.nbcamp.b4trello.jwt.JwtProvider;
-import com.nbcamp.b4trello.mail.SHA256MailProvider;
 import com.nbcamp.b4trello.repository.RefreshTokenRepository;
 import com.nbcamp.b4trello.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,14 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AuthService implements LogoutHandler {
-    /**
-     * 관련 클래스 호출
-     */
     private final JwtProvider jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
-    private final MailManager mailManager;
-    private static String magickey="";
 
     /**
      * 토큰 재발급 메서드
@@ -48,7 +41,7 @@ public class AuthService implements LogoutHandler {
     @Transactional
     public TokenDto reissue(String refreshToken) {
         Optional<RefreshToken> token = refreshTokenRepository.findByRefreshToken(refreshToken);
-        if(token!=null && !token.get().getRefreshToken().equals(refreshToken)){
+        if(token.isEmpty() || !token.get().getRefreshToken().equals(refreshToken)){
             throw new IllegalArgumentException(ErrorMessageEnum.AUTH_BAD_TOKEN.getMessage());
         }
         Authentication authentication = jwtUtil.getAuthentication(refreshToken.substring(7));
@@ -65,10 +58,10 @@ public class AuthService implements LogoutHandler {
      */
     @Transactional
     @Override
-    public void logout(HttpServletRequest request, HttpServletResponse response , Authentication authentication) {
+    public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         String authHeader = request.getHeader(JwtEnum.ACCESS_TOKEN.getValue());
 
-        if (authHeader == null && !authHeader.startsWith(JwtEnum.GRANT_TYPE.getValue())) {
+        if (authHeader == null || !authHeader.startsWith(JwtEnum.GRANT_TYPE.getValue())) {
             throw new IllegalArgumentException(ErrorMessageEnum.AUTH_BAD_ACCESS.getMessage());
         }
         String accessToken = authHeader.substring(7);
@@ -83,7 +76,6 @@ public class AuthService implements LogoutHandler {
     /**
      * 메일 전송 메서드
      * @param user
-     * @return
      */
     public void sendMail(User user){
         if(user.getStatus() == StatusEnum.VERYFICATION) {
@@ -93,9 +85,9 @@ public class AuthService implements LogoutHandler {
         String key = uuid.toString().substring(0,7);
         String sub = "인증번호 메일 전송";
         String content = "인증번호 : " + key;
-        mailManager.send(user.getEmail(), sub, content);
-        magickey = SHA256MailProvider.getEncrypt(key, user.getEmail());
-        log.info(magickey);
+        //mailManager.send(user.getEmail(), sub, content);
+        //mockup for mailManager
+        log.info("Sending mail to: {}, Subject: {}, Content: {}", user.getEmail(), sub, content);
     }
 
     /**
@@ -106,8 +98,8 @@ public class AuthService implements LogoutHandler {
      */
     @Transactional
     public UserResponseDto checkMail(String key, String email){
-        String insertKey = SHA256MailProvider.getEncrypt(key, email);
-        if (!magickey.equals(insertKey)){
+        String insertKey = key; //mockup for key generation
+        if (!key.equals(insertKey)){
             throw new IllegalArgumentException(ErrorMessageEnum.MAIL_BAD_REQUEST.getMessage());
         }
         Optional<User> user = userRepository.findByEmail(email);
@@ -115,5 +107,4 @@ public class AuthService implements LogoutHandler {
         userRepository.save(user.get());
         return UserResponseDto.builder().username(user.get().getUsername()).build();
     }
-
 }

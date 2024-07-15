@@ -22,8 +22,13 @@ const Board = ({ boardId, boardTitle, boardDescription, isManager, isSample }) =
             setColumns(boardDescription.columns);
         } else {
             const fetchColumns = async () => {
-                const data = await getColumns(boardId);
-                setColumns(data);
+                try {
+                    const data = await getColumns(boardId);
+                    setColumns(data);
+                } catch (error) {
+                    console.error('Error fetching columns:', error);
+                    alert('Failed to fetch columns.');
+                }
             };
             fetchColumns();
         }
@@ -44,34 +49,48 @@ const Board = ({ boardId, boardTitle, boardDescription, isManager, isSample }) =
             alert('Column name already exists. Please choose a different name.');
             return;
         }
-        const newColumn = await createColumn(boardId, { title: newColumnName });
-        setColumns([...columns, newColumn]);
-        setColumnModalOpen(false);
-        setNewColumnName('');
+        try {
+            const newColumn = await createColumn({ boardId, columnTitle: newColumnName });
+            setColumns([...columns, newColumn]);
+            setColumnModalOpen(false);
+            setNewColumnName('');
+        } catch (error) {
+            console.error('Error creating column:', error);
+            alert('Failed to create column.');
+        }
     };
 
     const handleDeleteColumn = async (columnId) => {
         if (!checkPermission()) return;
 
-        await deleteColumn(columnId);
-        setColumns(columns.filter(column => column.id !== columnId));
+        try {
+            await deleteColumn(columnId);
+            setColumns(columns.filter(column => column.id !== columnId));
+        } catch (error) {
+            console.error('Error deleting column:', error);
+            alert('Failed to delete column.');
+        }
     };
 
-    const moveColumn = async (result) => {
-        if (!result.destination) return;
-        const updatedColumns = Array.from(columns);
-        const [removed] = updatedColumns.splice(result.source.index, 1);
-        updatedColumns.splice(result.destination.index, 0, removed);
+    const moveColumn = (fromIndex, toIndex) => {
+        if (toIndex < 0 || toIndex >= columns.length) return;
+        const updatedColumns = [...columns];
+        const [movedColumn] = updatedColumns.splice(fromIndex, 1);
+        updatedColumns.splice(toIndex, 0, movedColumn);
         setColumns(updatedColumns);
-        await updateColumnSequence(boardId, updatedColumns.map(column => column.id));
     };
 
     const handleBoardNameChange = async () => {
         if (!checkPermission()) return;
 
-        const updatedBoard = await updateBoardName(boardId, boardName);
-        setBoardName(updatedBoard.name);
-        setBoardNameModalOpen(false);
+        try {
+            const updatedBoard = await updateBoardName(boardId, boardName);
+            setBoardName(updatedBoard.name);
+            setBoardNameModalOpen(false);
+        } catch (error) {
+            console.error('Error updating board name:', error);
+            alert('Failed to update board name.');
+        }
     };
 
     const handleMenuClick = (event) => {
@@ -96,7 +115,7 @@ const Board = ({ boardId, boardTitle, boardDescription, isManager, isSample }) =
                     <MenuItem onClick={() => setColumnModalOpen(true)}>Create Column</MenuItem>
                 </Menu>
             </Box>
-            <DragDropContext onDragEnd={moveColumn}>
+            <DragDropContext onDragEnd={() => { }}>
                 <Droppable droppableId={`droppable-${boardId}`} direction="horizontal">
                     {(provided) => (
                         <Box {...provided.droppableProps} ref={provided.innerRef} sx={{ display: 'flex', overflowX: 'auto' }}>
