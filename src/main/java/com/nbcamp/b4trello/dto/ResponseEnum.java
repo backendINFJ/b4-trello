@@ -13,6 +13,7 @@ public enum ResponseEnum {
 	GET_CARD("카드 조회 완료", HttpStatus.OK),
 	UPDATE_CARD("카드 수정 완료", HttpStatus.OK),
 	DELETE_CARD("카드 삭제 완료", HttpStatus.OK),
+	ERROR("에러가 발생했습니다", HttpStatus.BAD_REQUEST), // 추가
 	SUCCESS(HttpStatus.OK, "요청이 성공적으로 처리되었습니다."),
 	CREATED(HttpStatus.CREATED, "리소스가 성공적으로 생성되었습니다."),
 	NO_CONTENT(HttpStatus.NO_CONTENT, "리소스가 성공적으로 삭제되었습니다."),
