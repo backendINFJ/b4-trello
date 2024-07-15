@@ -6,6 +6,7 @@ import com.nbcamp.b4trello.dto.TokenDto;
 import com.nbcamp.b4trello.dto.UserResponseDto;
 import com.nbcamp.b4trello.entity.RefreshToken;
 import com.nbcamp.b4trello.entity.User;
+import com.nbcamp.b4trello.enums.StatusEnum;
 import com.nbcamp.b4trello.jwt.JwtEnum;
 import com.nbcamp.b4trello.jwt.JwtProvider;
 import com.nbcamp.b4trello.mail.SHA256MailProvider;
@@ -81,16 +82,19 @@ public class AuthService implements LogoutHandler {
 
     /**
      * 메일 전송 메서드
-     * @param email
+     * @param user
      * @return
      */
-    public void sendMail(String email){
+    public void sendMail(User user){
+        if(user.getStatus() == StatusEnum.VERYFICATION) {
+            throw new IllegalArgumentException(ErrorMessageEnum.ALREADY_MAIL_ACCESS.getMessage());
+        }
         UUID uuid = UUID.randomUUID();
         String key = uuid.toString().substring(0,7);
         String sub = "인증번호 메일 전송";
         String content = "인증번호 : " + key;
-        mailManager.send(email, sub, content);
-        magickey = SHA256MailProvider.getEncrypt(key, email);
+        mailManager.send(user.getEmail(), sub, content);
+        magickey = SHA256MailProvider.getEncrypt(key, user.getEmail());
         log.info(magickey);
     }
 
@@ -100,6 +104,7 @@ public class AuthService implements LogoutHandler {
      * @param email
      * @return
      */
+    @Transactional
     public UserResponseDto checkMail(String key, String email){
         String insertKey = SHA256MailProvider.getEncrypt(key, email);
         if (!magickey.equals(insertKey)){
@@ -107,6 +112,7 @@ public class AuthService implements LogoutHandler {
         }
         Optional<User> user = userRepository.findByEmail(email);
         user.get().verifiStatus();
+        userRepository.save(user.get());
         return UserResponseDto.builder().username(user.get().getUsername()).build();
     }
 
