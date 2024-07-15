@@ -6,9 +6,9 @@ import lombok.Getter;
 
 @Getter
 public class CommonResponse<T> {
-	private HttpStatus statusCode;
-	private String message;
-	private T data;
+	private final HttpStatus statusCode;
+	private final String message;
+	private final T data;
 
 	@Builder
 	public CommonResponse(ResponseEnum responseEnum, T data) {

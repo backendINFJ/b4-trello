@@ -41,7 +41,9 @@ public enum ErrorMessageEnum {
 	COLUMN_NOT_SEQUENCE("컬럼 순서를 찾을 수 없습니다."),
 
 	// Card errors
-	CARD_NOT_FOUND("카드를 찾을 수 없습니다.");
+	CARD_NOT_FOUND("카드를 찾을 수 없습니다."),
+	MISMATCH_USER("작성자만 가능합니다."),
+	BAD_PARAM("잘못된 값입니다.");
 
 	private final String message;
 
