@@ -1,86 +1,105 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, TextField, IconButton, Modal } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
+import { Box, Typography, Modal, Button, TextField, IconButton, Menu, MenuItem } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import PermissionDeniedModal from './PermissionDeniedModal';
-import ColumnNameModal from './ColumnNameModal';
 import Column from './Column';
+import PermissionDeniedModal from './PermissionDeniedModal';
+import { getColumns, createColumn, updateColumnSequence, deleteColumn } from '../api/columnApi';
+import { updateBoardName } from '../api/boardApi';
 
-const Board = ({ boardId, boardTitle, boardDescription, isManager, userRole, onNameChange, onDelete, onInvite, columns }) => {
-    const [columnData, setColumnData] = useState(columns);
-    const [modalOpen, setModalOpen] = useState(false);
+const Board = ({ boardId, boardTitle, boardDescription, isManager, isSample }) => {
+    const [columns, setColumns] = useState([]);
     const [columnModalOpen, setColumnModalOpen] = useState(false);
-    const [editModalOpen, setEditModalOpen] = useState(false);
-    const [editBoardName, setEditBoardName] = useState(boardTitle);
+    const [newColumnName, setNewColumnName] = useState('');
+    const [boardName, setBoardName] = useState(boardTitle);
+    const [boardNameModalOpen, setBoardNameModalOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [permissionDeniedOpen, setPermissionDeniedOpen] = useState(false);
 
     useEffect(() => {
-        setColumnData(columns);
-    }, [columns]);
+        if (isSample) {
+            setColumns(boardDescription.columns);
+        } else {
+            const fetchColumns = async () => {
+                const data = await getColumns(boardId);
+                setColumns(data);
+            };
+            fetchColumns();
+        }
+    }, [boardId, boardDescription, isSample]);
 
-    const handleAddColumn = (columnName) => {
-        const addNewColumn = async () => {
-            const newColumn = { id: Math.random().toString(), title: columnName };
-            setColumnData([...columnData, newColumn]);
-        };
-        addNewColumn();
-    };
-
-    const handleDeleteColumn = (columnId) => {
-        setColumnData(columnData.filter(column => column.id !== columnId));
-    };
-
-    const onDragEnd = (result) => {
-        if (!result.destination) return;
-
+    const checkPermission = () => {
         if (!isManager) {
-            setModalOpen(true);
+            setPermissionDeniedOpen(true);
+            return false;
+        }
+        return true;
+    };
+
+    const handleAddColumn = async () => {
+        if (!checkPermission()) return;
+
+        if (columns.some(column => column.title === newColumnName)) {
+            alert('Column name already exists. Please choose a different name.');
             return;
         }
-
-        const updatedColumns = [...columnData];
-        const [movedColumn] = updatedColumns.splice(result.source.index, 1);
-        updatedColumns.splice(result.destination.index, 0, movedColumn);
-
-        setColumnData(updatedColumns);
+        const newColumn = await createColumn(boardId, { title: newColumnName });
+        setColumns([...columns, newColumn]);
+        setColumnModalOpen(false);
+        setNewColumnName('');
     };
 
-    const handleCloseEditModal = () => {
-        setEditModalOpen(false);
+    const handleDeleteColumn = async (columnId) => {
+        if (!checkPermission()) return;
+
+        await deleteColumn(columnId);
+        setColumns(columns.filter(column => column.id !== columnId));
     };
 
-    const handleUpdateBoard = () => {
-        onNameChange({ boardName: editBoardName, description: boardDescription });
-        setEditModalOpen(false);
+    const moveColumn = (fromIndex, toIndex) => {
+        if (toIndex < 0 || toIndex >= columns.length) return;
+        const updatedColumns = [...columns];
+        const [movedColumn] = updatedColumns.splice(fromIndex, 1);
+        updatedColumns.splice(toIndex, 0, movedColumn);
+        setColumns(updatedColumns);
+    };
+
+    const handleBoardNameChange = async () => {
+        if (!checkPermission()) return;
+
+        const updatedBoard = await updateBoardName(boardId, boardName);
+        setBoardName(updatedBoard.name);
+        setBoardNameModalOpen(false);
+    };
+
+    const handleMenuClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
     };
 
     return (
-        <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Typography variant="h5" sx={{ marginRight: 1 }}>{boardTitle}</Typography>
-                    <Typography variant="body2" sx={{ marginRight: 2 }}>{userRole}</Typography>
-                    {isManager && (
-                        <IconButton onClick={() => setEditModalOpen(true)} sx={{ padding: '0', marginLeft: '4px' }}>
-                            <EditIcon />
-                        </IconButton>
-                    )}
-                </Box>
-                {isManager && (
-                    <Button variant="outlined" color="secondary" onClick={onDelete}>
-                        Delete Board
-                    </Button>
-                )}
+        <Box sx={{ margin: 2, backgroundColor: '#f4f4f4', borderRadius: 2, width: 300 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 2, backgroundColor: '#e0e0e0', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
+                <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'left' }}>{boardName}</Typography>
+                <IconButton onClick={handleMenuClick}><MoreVertIcon /></IconButton>
+                <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                >
+                    <MenuItem onClick={() => setBoardNameModalOpen(true)}>Edit Board</MenuItem>
+                    <MenuItem onClick={() => setColumnModalOpen(true)}>Create Column</MenuItem>
+                </Menu>
             </Box>
-            <Typography variant="body2" sx={{ marginBottom: 2 }}>{boardDescription}</Typography>
-            {isManager && (
-                <Button onClick={() => setColumnModalOpen(true)} sx={{ margin: 2 }}>Add Column</Button>
-            )}
-            <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="droppable-board" direction="horizontal">
+            <DragDropContext onDragEnd={() => { }}>
+                <Droppable droppableId={`droppable-${boardId}`} direction="horizontal">
                     {(provided) => (
-                        <Box display="flex" {...provided.droppableProps} ref={provided.innerRef} sx={{ overflowX: 'auto' }}>
-                            {columnData.map((column, index) => (
+                        <Box {...provided.droppableProps} ref={provided.innerRef} sx={{ display: 'flex', overflowX: 'auto' }}>
+                            {columns.map((column, index) => (
                                 <Draggable key={column.id} draggableId={column.id} index={index}>
                                     {(provided) => (
                                         <Box
@@ -89,7 +108,14 @@ const Board = ({ boardId, boardTitle, boardDescription, isManager, userRole, onN
                                             {...provided.dragHandleProps}
                                             sx={{ margin: 2 }}
                                         >
-                                            <Column columnId={column.id} title={column.title} isManager={isManager} onDeleteColumn={() => handleDeleteColumn(column.id)} />
+                                            <Column
+                                                columnId={column.id}
+                                                title={column.title}
+                                                isManager={isManager}
+                                                index={index}
+                                                moveColumn={moveColumn}
+                                                deleteColumn={handleDeleteColumn}
+                                            />
                                         </Box>
                                     )}
                                 </Draggable>
@@ -99,29 +125,43 @@ const Board = ({ boardId, boardTitle, boardDescription, isManager, userRole, onN
                     )}
                 </Droppable>
             </DragDropContext>
-            <PermissionDeniedModal open={modalOpen} onClose={() => setModalOpen(false)} />
-            <ColumnNameModal open={columnModalOpen} onClose={() => setColumnModalOpen(false)} onSubmit={handleAddColumn} />
-            <Modal open={editModalOpen} onClose={handleCloseEditModal}>
+            <Modal open={columnModalOpen} onClose={() => setColumnModalOpen(false)}>
                 <Box sx={{ p: 4, bgcolor: 'white', borderRadius: 1, width: 300, mx: 'auto', mt: '20vh', textAlign: 'center', position: 'relative' }}>
-                    <IconButton sx={{ position: 'absolute', right: 8, top: 8 }} onClick={handleCloseEditModal}>
+                    <IconButton sx={{ position: 'absolute', right: 8, top: 8 }} onClick={() => setColumnModalOpen(false)}>
                         <CloseIcon />
                     </IconButton>
-                    <Typography variant="h6">Edit Board</Typography>
+                    <Typography variant="h6">Create Column</Typography>
                     <TextField
-                        value={editBoardName}
-                        onChange={(e) => setEditBoardName(e.target.value)}
+                        value={newColumnName}
+                        onChange={(e) => setNewColumnName(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                        label="Column Name"
+                    />
+                    <Button variant="contained" color="primary" onClick={handleAddColumn} sx={{ mt: 2 }}>
+                        Create
+                    </Button>
+                </Box>
+            </Modal>
+            <Modal open={boardNameModalOpen} onClose={() => setBoardNameModalOpen(false)}>
+                <Box sx={{ p: 4, bgcolor: 'white', borderRadius: 1, width: 300, mx: 'auto', mt: '20vh', textAlign: 'center', position: 'relative' }}>
+                    <IconButton sx={{ position: 'absolute', right: 8, top: 8 }} onClick={() => setBoardNameModalOpen(false)}>
+                        <CloseIcon />
+                    </IconButton>
+                    <Typography variant="h6">Edit Board Name</Typography>
+                    <TextField
+                        value={boardName}
+                        onChange={(e) => setBoardName(e.target.value)}
                         fullWidth
                         margin="normal"
                         label="Board Name"
                     />
-                    <Button variant="contained" color="primary" onClick={handleUpdateBoard} sx={{ mt: 2 }}>
-                        Update
-                    </Button>
-                    <Button variant="outlined" color="secondary" onClick={onDelete} sx={{ mt: 2 }}>
-                        Delete Board
+                    <Button variant="contained" color="primary" onClick={handleBoardNameChange} sx={{ mt: 2 }}>
+                        Save
                     </Button>
                 </Box>
             </Modal>
+            <PermissionDeniedModal open={permissionDeniedOpen} onClose={() => setPermissionDeniedOpen(false)} />
         </Box>
     );
 };

@@ -2,19 +2,6 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8080';
 
-export const createBoard = async (boardData) => {
-    try {
-        const response = await axios.post(`${API_URL}/boards`, boardData, {
-            headers: {
-                'AccessToken': localStorage.getItem('accessToken'),
-            }
-        });
-        return response.data;
-    } catch (error) {
-        throw error.response.data;
-    }
-};
-
 export const getBoards = async () => {
     try {
         const response = await axios.get(`${API_URL}/boards`, {
@@ -28,9 +15,22 @@ export const getBoards = async () => {
     }
 };
 
+export const createBoard = async (boardData) => {
+    try {
+        const response = await axios.post(`${API_URL}/boards`, boardData, {
+            headers: {
+                'AccessToken': localStorage.getItem('accessToken'),
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
+
 export const updateBoard = async (boardId, boardData) => {
     try {
-        const response = await axios.patch(`${API_URL}/boards/${boardId}`, boardData, {
+        const response = await axios.put(`${API_URL}/boards/${boardId}`, boardData, {
             headers: {
                 'AccessToken': localStorage.getItem('accessToken'),
             }
@@ -56,7 +56,20 @@ export const deleteBoard = async (boardId) => {
 
 export const inviteUser = async (boardId, inviteData) => {
     try {
-        const response = await axios.post(`${API_URL}/boards/${boardId}/invitation`, inviteData, {
+        const response = await axios.post(`${API_URL}/boards/${boardId}/invite`, inviteData, {
+            headers: {
+                'AccessToken': localStorage.getItem('accessToken'),
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
+
+export const updateBoardName = async (boardId, newName) => {
+    try {
+        const response = await axios.put(`${API_URL}/boards/${boardId}/name`, { name: newName }, {
             headers: {
                 'AccessToken': localStorage.getItem('accessToken'),
             }

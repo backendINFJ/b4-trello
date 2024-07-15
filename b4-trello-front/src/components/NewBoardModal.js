@@ -22,7 +22,7 @@ const NewBoardModal = ({ open, onClose, onSubmit }) => {
     };
 
     const handleSubmit = () => {
-        onSubmit({ title: boardName, description });
+        onSubmit({ boardName, description });
         onClose();
     };
 

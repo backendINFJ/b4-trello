@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Paper, Typography, IconButton, Menu, MenuItem, Modal, Button, TextField } from '@mui/material';
+import { Box, Paper, Typography, IconButton, Menu, MenuItem, Modal, TextField, Button } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import EditIcon from '@mui/icons-material/Edit';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
 import CardNameModal from './CardNameModal';
 import DeleteCardModal from './DeleteCardModal';
 import CardDetailModal from './CardDetailModal';
@@ -39,6 +39,8 @@ const Column = ({ columnId, title, isManager, index, moveColumn, deleteColumn })
     const [anchorEl, setAnchorEl] = useState(null);
     const [cardDetailOpen, setCardDetailOpen] = useState(false);
     const [selectedCard, setSelectedCard] = useState(null);
+    const [columnNameModalOpen, setColumnNameModalOpen] = useState(false);
+    const [columnName, setColumnName] = useState(title);
 
     useEffect(() => {
         const fetchCards = async () => {
@@ -107,12 +109,15 @@ const Column = ({ columnId, title, isManager, index, moveColumn, deleteColumn })
         setSelectedCard(null);
     };
 
+    const handleColumnNameChange = () => {
+        setColumnNameModalOpen(false);
+    };
+
     return (
         <Box sx={{ margin: 2, backgroundColor: '#f4f4f4', borderRadius: 2, width: 300 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 2, backgroundColor: '#e0e0e0', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
-                <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'left' }}>{title} {cards.length}</Typography>
-                <IconButton onClick={() => moveColumn(index, index - 1)}><ChevronLeftIcon /></IconButton>
-                <IconButton onClick={() => moveColumn(index, index + 1)}><ChevronRightIcon /></IconButton>
+                <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'left' }}>{columnName}</Typography>
+                <IconButton onClick={() => setColumnNameModalOpen(true)}><EditIcon /></IconButton>
                 <IconButton onClick={() => deleteColumn(columnId)}><DeleteIcon /></IconButton>
             </Box>
             <DragDropContext onDragEnd={onDragEnd}>
@@ -160,6 +165,24 @@ const Column = ({ columnId, title, isManager, index, moveColumn, deleteColumn })
             <CardNameModal open={cardModalOpen} onClose={() => setCardModalOpen(false)} onSubmit={handleAddCard} />
             <DeleteCardModal open={deleteCardModalOpen} onClose={() => setDeleteCardModalOpen(false)} onDelete={() => handleDeleteCard(cardToDelete)} />
             <CardDetailModal open={cardDetailOpen} onClose={handleCardDetailClose} card={selectedCard} onDelete={handleDeleteCard} />
+            <Modal open={columnNameModalOpen} onClose={() => setColumnNameModalOpen(false)}>
+                <Box sx={{ p: 4, bgcolor: 'white', borderRadius: 1, width: 300, mx: 'auto', mt: '20vh', textAlign: 'center', position: 'relative' }}>
+                    <IconButton sx={{ position: 'absolute', right: 8, top: 8 }} onClick={() => setColumnNameModalOpen(false)}>
+                        <CloseIcon />
+                    </IconButton>
+                    <Typography variant="h6">컬럼 이름 수정</Typography>
+                    <TextField
+                        value={columnName}
+                        onChange={(e) => setColumnName(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                        label="컬럼 이름"
+                    />
+                    <Button variant="contained" color="primary" onClick={handleColumnNameChange} sx={{ mt: 2 }}>
+                        저장
+                    </Button>
+                </Box>
+            </Modal>
         </Box>
     );
 };

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Snackbar, Alert, Typography } from '@mui/material';
+import { Box, Button, Typography, Modal, Snackbar, Alert, IconButton, Menu, MenuItem } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import CloseIcon from '@mui/icons-material/Close';
 import Header from '../components/Header';
-import BoardList from '../components/BoardList';
+import NewBoardModal from '../components/NewBoardModal';
 import Board from '../components/Board';
 import { createBoard, getBoards, updateBoard, deleteBoard, inviteUser } from '../api/boardApi';
 
@@ -11,46 +13,47 @@ const MainPage = ({ user }) => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-    const [selectedBoard, setSelectedBoard] = useState(null);
+    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+    const [selectedBoardId, setSelectedBoardId] = useState(null);
 
     useEffect(() => {
         const fetchBoards = async () => {
-            if (user) {
-                try {
-                    const response = await getBoards();
-                    setBoards(response.data.data);
-                } catch (error) {
-                    setSnackbarMessage('보드를 불러오는데 실패했습니다.');
-                    setSnackbarSeverity('error');
-                    setSnackbarOpen(true);
-                }
-            } else {
-                // 기본 샘플 보드 설정
-                const sampleBoards = [
+            try {
+                const response = await getBoards();
+                const data = response.data;
+                setBoards(data);
+            } catch (error) {
+                setBoards([
                     {
                         id: 'sampleBoard1',
                         boardName: 'Sample Board 1',
                         description: 'This is a sample board',
                         columns: [
-                            { id: '1', title: 'Sample Column 1' },
-                            { id: '2', title: 'Sample Column 2' },
-                        ]
+                            {
+                                id: 'sampleColumn1',
+                                title: 'Sample Column 1',
+                                cards: [
+                                    { id: 'sampleCard1', title: 'Sample Card 1', content: 'This is a sample card' },
+                                    { id: 'sampleCard2', title: 'Sample Card 2', content: 'This is another sample card' },
+                                ],
+                            },
+                            {
+                                id: 'sampleColumn2',
+                                title: 'Sample Column 2',
+                                cards: [
+                                    { id: 'sampleCard3', title: 'Sample Card 3', content: 'This is a third sample card' },
+                                ],
+                            },
+                        ],
                     },
-                    {
-                        id: 'sampleBoard2',
-                        boardName: 'Sample Board 2',
-                        description: 'This is another sample board',
-                        columns: [
-                            { id: '3', title: 'Sample Column 3' },
-                            { id: '4', title: 'Sample Column 4' },
-                        ]
-                    }
-                ];
-                setBoards(sampleBoards);
+                ]);
+                setSnackbarMessage('보드를 불러오는데 실패했습니다.');
+                setSnackbarSeverity('error');
+                setSnackbarOpen(true);
             }
         };
         fetchBoards();
-    }, [user]);
+    }, []);
 
     const handleCreateBoard = async (boardData) => {
         try {
@@ -107,48 +110,76 @@ const MainPage = ({ user }) => {
         }
     };
 
-    const handleBoardSelect = (board) => {
-        setSelectedBoard(board);
-    };
-
     const handleSnackbarClose = () => {
         setSnackbarOpen(false);
+    };
+
+    const handleMenuClick = (event, boardId) => {
+        setMenuAnchorEl(event.currentTarget);
+        setSelectedBoardId(boardId);
+    };
+
+    const handleMenuClose = () => {
+        setMenuAnchorEl(null);
+        setSelectedBoardId(null);
     };
 
     return (
         <Box>
             <Header user={user} />
-            <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-                <BoardList
-                    boards={boards}
-                    onBoardSelect={handleBoardSelect}
-                    onBoardUpdate={handleUpdateBoard}
-                    onBoardDelete={handleDeleteBoard}
-                    onCreateBoard={handleCreateBoard}
-                />
-                <Box sx={{ flex: 1, p: 2 }}>
-                    {selectedBoard ? (
-                        <Board
-                            key={selectedBoard.id}
-                            boardId={selectedBoard.id}
-                            boardTitle={selectedBoard.boardName}
-                            boardDescription={selectedBoard.description}
-                            columns={selectedBoard.columns || []} // 기본값 설정
-                            isManager={user && user.role === 'MANAGER'}
-                            onNameChange={(newName) => handleUpdateBoard(selectedBoard.id, { boardName: newName })}
-                            onDelete={() => handleDeleteBoard(selectedBoard.id)}
-                            onInvite={(inviteData) => handleInviteUser(selectedBoard.id, inviteData)}
-                        />
-                    ) : (
-                        <Typography>보드를 선택해주세요.</Typography>
+            <Box sx={{ display: 'flex', padding: 2 }}>
+                <Box sx={{ minWidth: '300px', padding: 2, marginRight: 2, backgroundColor: '#f4f4f4', borderRadius: 1 }}>
+                    <Typography variant="h6">Board List</Typography>
+                    {boards.map((board) => (
+                        <Box key={board.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                            <Typography>{board.boardName}</Typography>
+                            <IconButton onClick={(event) => handleMenuClick(event, board.id)}>
+                                <MoreVertIcon />
+                            </IconButton>
+                        </Box>
+                    ))}
+                    <Menu
+                        anchorEl={menuAnchorEl}
+                        open={Boolean(menuAnchorEl)}
+                        onClose={handleMenuClose}
+                    >
+                        <MenuItem onClick={() => handleUpdateBoard(selectedBoardId, { boardName: 'New Name', description: '' })}>Edit Board</MenuItem>
+                        <MenuItem onClick={() => setNewBoardOpen(true)}>Create Column</MenuItem>
+                        <MenuItem onClick={() => handleDeleteBoard(selectedBoardId)}>Delete Board</MenuItem>
+                    </Menu>
+                    {user && user.role === 'MANAGER' && (
+                        <Button onClick={() => setNewBoardOpen(true)} sx={{ marginTop: 2 }}>+ Create Board</Button>
                     )}
                 </Box>
+                {boards.length > 0 ? (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+                        {boards.map((board) => (
+                            <Board
+                                key={board.id}
+                                boardId={board.id}
+                                boardTitle={board.boardName}
+                                boardDescription={board.description}
+                                isManager={user && user.role === 'MANAGER'}
+                                onNameChange={() => handleUpdateBoard(board.id, { boardName: 'New Name', description: board.description })}
+                                onDelete={() => handleDeleteBoard(board.id)}
+                                onInvite={(inviteData) => handleInviteUser(board.id, inviteData)}
+                            />
+                        ))}
+                    </Box>
+                ) : (
+                    <Typography>보드를 불러오는 중입니다...</Typography>
+                )}
+                <NewBoardModal
+                    open={newBoardOpen}
+                    onClose={() => setNewBoardOpen(false)}
+                    onSubmit={handleCreateBoard}
+                />
+                <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+                    <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
             </Box>
-            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
-                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 };
