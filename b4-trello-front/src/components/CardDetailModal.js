@@ -1,13 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Box, Typography, TextField, Button, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import { getComments, createComment } from '../api/commentApi';
 
 const CardDetailModal = ({ open, onClose, card, onUpdate, onDelete }) => {
     const [title, setTitle] = useState(card.title);
     const [content, setContent] = useState(card.content);
-    const [comments, setComments] = useState(card.comments || []);
+    const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
+
+    useEffect(() => {
+        const fetchComments = async () => {
+            try {
+                const fetchedComments = await getComments(card.id);
+                setComments(fetchedComments);
+            } catch (error) {
+                console.error('Failed to fetch comments', error);
+            }
+        };
+
+        if (open) {
+            fetchComments();
+        }
+    }, [open, card.id]);
 
     const handleUpdate = () => {
         onUpdate({ ...card, title, content });
@@ -17,10 +33,15 @@ const CardDetailModal = ({ open, onClose, card, onUpdate, onDelete }) => {
         onDelete(card.id);
     };
 
-    const handleAddComment = () => {
+    const handleAddComment = async () => {
         if (newComment.trim()) {
-            setComments([...comments, newComment]);
-            setNewComment('');
+            try {
+                const addedComment = await createComment(card.id, newComment);
+                setComments([...comments, addedComment]);
+                setNewComment('');
+            } catch (error) {
+                console.error('Failed to add comment', error);
+            }
         }
     };
 
@@ -71,7 +92,7 @@ const CardDetailModal = ({ open, onClose, card, onUpdate, onDelete }) => {
                 <Box sx={{ mt: 2, textAlign: 'left' }}>
                     {comments.map((comment, index) => (
                         <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                            <Typography variant="body2">{comment}</Typography>
+                            <Typography variant="body2">{comment.content}</Typography>
                             <IconButton size="small" onClick={() => handleDeleteComment(index)}>
                                 <CloseIcon fontSize="small" />
                             </IconButton>
@@ -87,7 +108,6 @@ const CardDetailModal = ({ open, onClose, card, onUpdate, onDelete }) => {
                 />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
                     <Button variant="contained" color="primary" onClick={handleAddComment}>댓글 등록</Button>
-                    <Button variant="contained" color="error" onClick={handleDeleteComment}>삭제</Button>
                 </Box>
             </Box>
         </Modal>
