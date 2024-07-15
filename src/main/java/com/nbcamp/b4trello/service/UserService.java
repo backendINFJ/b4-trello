@@ -60,7 +60,7 @@ public class UserService {
             if(bCryptPasswordEncoder.matches(updateDTO.getPassword(),user.getPassword())){
                 throw new IllegalArgumentException(ErrorMessageEnum.SAME_PASSWORD.getMessage());
             }
-     
+
 
 
         Optional<User> originUser = userRepository.findById(userId);
