@@ -13,6 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -42,8 +43,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
+            InputStream inputStream = request.getInputStream();
+            if (inputStream == null || inputStream.available() == 0) {
+                throw new IOException("Request input stream is empty");
+            }
+
             ObjectMapper mapper = new ObjectMapper();
-            AuthRequestDto authRequest = mapper.readValue(request.getInputStream(), AuthRequestDto.class);
+            AuthRequestDto authRequest = mapper.readValue(inputStream, AuthRequestDto.class);
 
             UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword());
@@ -51,7 +57,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             return authenticationManager.authenticate(authenticationToken);
         } catch (IOException e) {
             logger.error("Failed to parse authentication request body", e);
-            throw new RuntimeException("Failed to parse authentication request body");
+            throw new RuntimeException("Failed to parse authentication request body", e);
         }
     }
 

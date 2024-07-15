@@ -9,17 +9,21 @@ import com.nbcamp.b4trello.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS}, allowedHeaders = "*")
 public class AuthController {
 
     private final AuthService authService;
@@ -27,16 +31,27 @@ public class AuthController {
     @PostMapping("/reissue")
     public ResponseEntity<String> reissue(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = request.getHeader(JwtEnum.REFRESH_TOKEN.getValue());
-        TokenDto token = authService.reissue(refreshToken);
-        response.setHeader(JwtEnum.ACCESS_TOKEN.getValue(), token.getAccessToken());
-        response.setHeader(JwtEnum.REFRESH_TOKEN.getValue(), token.getRefreshToken());
-        return ResponseEntity.ok("재발급완료");
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("리프레시 토큰이 없습니다.");
+        }
+        try {
+            TokenDto token = authService.reissue(refreshToken);
+            response.setHeader(JwtEnum.ACCESS_TOKEN.getValue(), token.getAccessToken());
+            response.setHeader(JwtEnum.REFRESH_TOKEN.getValue(), token.getRefreshToken());
+            return ResponseEntity.ok("재발급완료");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
     }
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        authService.logout(request, response, authentication);
-        return ResponseEntity.status(ResponseEnum.USER_LOGOUT.getHttpStatus()).body(ResponseEnum.USER_LOGOUT.getMessage());
+        try {
+            authService.logout(request, response, authentication);
+            return ResponseEntity.status(ResponseEnum.USER_LOGOUT.getHttpStatus()).body(ResponseEnum.USER_LOGOUT.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
     }
 
     @PostMapping("/send-mail")

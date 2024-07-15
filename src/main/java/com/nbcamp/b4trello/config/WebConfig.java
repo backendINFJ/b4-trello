@@ -1,5 +1,3 @@
-package com.nbcamp.b4trello.config;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -14,9 +12,9 @@ public class WebConfig {
       @Override
       public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-            .allowedOrigins("http://localhost:3003")
+            .allowedOrigins("*") // 모든 출처 허용
             .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD")
-            .allowedHeaders("Content-Type", "Accept", "Accept-Language", "Accept-Encoding")
+            .allowedHeaders("*")
             .allowCredentials(true);
       }
     };

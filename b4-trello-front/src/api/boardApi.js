@@ -1,79 +1,48 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_URL || '';
 
-export const getBoards = async () => {
+const api = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+export const createBoard = async (data) => {
     try {
-        const response = await axios.get(`${API_URL}/boards`, {
-            headers: {
-                'AccessToken': localStorage.getItem('accessToken'),
-            }
-        });
+        const response = await api.post('/boards', data);
         return response.data;
     } catch (error) {
         throw error.response.data;
     }
 };
 
-export const createBoard = async (boardData) => {
+export const fetchBoards = async () => {
     try {
-        const response = await axios.post(`${API_URL}/boards`, boardData, {
-            headers: {
-                'AccessToken': localStorage.getItem('accessToken'),
-            }
-        });
+        const response = await api.get('/boards');
         return response.data;
     } catch (error) {
         throw error.response.data;
     }
 };
 
-export const updateBoard = async (boardId, boardData) => {
+export const updateBoard = async (id, data) => {
     try {
-        const response = await axios.put(`${API_URL}/boards/${boardId}`, boardData, {
-            headers: {
-                'AccessToken': localStorage.getItem('accessToken'),
-            }
-        });
-        return response.data;
-    } catch (error) {
-        throw error.response.data;
-    }
-};
-
-export const deleteBoard = async (boardId) => {
-    try {
-        const response = await axios.delete(`${API_URL}/boards/${boardId}`, {
-            headers: {
-                'AccessToken': localStorage.getItem('accessToken'),
-            }
-        });
-        return response.data;
-    } catch (error) {
-        throw error.response.data;
-    }
-};
-
-export const inviteUser = async (boardId, inviteData) => {
-    try {
-        const response = await axios.post(`${API_URL}/boards/${boardId}/invite`, inviteData, {
-            headers: {
-                'AccessToken': localStorage.getItem('accessToken'),
-            }
-        });
-        return response.data;
-    } catch (error) {
-        throw error.response.data;
-    }
-};
-
-export const updateBoardName = async (boardId, newName) => {
-    try {
-        const response = await axios.put(`${API_URL}/boards/${boardId}/name`, { name: newName }, {
-            headers: {
-                'AccessToken': localStorage.getItem('accessToken'),
-            }
-        });
+        const response = await api.put(`/boards/${id}`, data);
         return response.data;
     } catch (error) {
         throw error.response.data;

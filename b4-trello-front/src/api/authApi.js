@@ -1,28 +1,82 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_URL || '';
+
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+api.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+);
 
 export const login = async (credentials) => {
-  const response = await axios.post(`${API_URL}/auth/login`, credentials);
-  return response.data;
+  try {
+    const response = await api.post('/auth/login', credentials);
+    localStorage.setItem('token', response.data.accessToken);
+    localStorage.setItem('refreshToken', response.data.refreshToken);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const createUser = async (data) => {
+  try {
+    const response = await api.post('/auth/signup', data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
 };
 
 export const reissueToken = async () => {
-  const response = await axios.post(`${API_URL}/auth/reissue`);
-  return response.data;
+  try {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+    const response = await api.post('/auth/reissue', null, {
+      headers: {
+        'Refresh-Token': refreshToken,
+      },
+    });
+    localStorage.setItem('token', response.data.accessToken);
+    localStorage.setItem('refreshToken', response.data.refreshToken);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
 };
 
 export const logout = async () => {
-  const response = await axios.post(`${API_URL}/auth/logout`);
-  return response.data;
+  try {
+    const response = await api.post('/auth/logout');
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
 };
 
-export const sendMail = async () => {
-  const response = await axios.post(`${API_URL}/auth/send-mail`);
-  return response.data;
-};
-
-export const checkMail = async (key) => {
-  const response = await axios.post(`${API_URL}/auth/check-mail`, { key });
-  return response.data;
+export const getUserInfo = async () => {
+  try {
+    const response = await api.get('/auth/user');
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
 };

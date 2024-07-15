@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// src/components/Header.js
+import React, { useState, useEffect, useContext } from 'react';
 import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem, Snackbar, Alert } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -6,15 +7,15 @@ import LoginForm from './LoginForm';
 import SignUpForm from './SignUpForm';
 import InvitationForm from './InvitationForm';
 import UserManagementForm from './UserManagementForm';
-import { login, reissueToken, logout } from '../api/authApi';
+import { AuthContext } from '../context/AuthContext';
 
-const Header = ({ onLogin, user: initialUser }) => {
+const Header = () => {
+    const { user, logout, reissueToken } = useContext(AuthContext);
     const [anchorEl, setAnchorEl] = useState(null);
     const [loginOpen, setLoginOpen] = useState(false);
     const [signUpOpen, setSignUpOpen] = useState(false);
     const [inviteOpen, setInviteOpen] = useState(false);
     const [userManageOpen, setUserManageOpen] = useState(false);
-    const [user, setUser] = useState(initialUser);
     const [expiryTime, setExpiryTime] = useState(30);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -37,68 +38,30 @@ const Header = ({ onLogin, user: initialUser }) => {
         setAnchorEl(null);
     };
 
-    const handleLogin = async (credentials) => {
-        try {
-            const userData = await login(credentials);
-            setUser(userData);
-            setSnackbarMessage('로그인 성공!');
-            setSnackbarSeverity('success');
-            setLoginOpen(false);
-        } catch (error) {
-            setSnackbarMessage('로그인 실패. 다시 시도해주세요.');
-            setSnackbarSeverity('error');
-            console.error('Failed to login:', error);
-        } finally {
-            setSnackbarOpen(true);
-        }
-    };
-
-    const handleSignUp = async (userInfo) => {
-        try {
-            // SignUp 로직을 추가하세요
-            setSignUpOpen(false);
-        } catch (error) {
-            console.error('Failed to sign up:', error);
-        }
-    };
-
-    const handleInvite = async (email) => {
-        try {
-            // Invite 로직을 추가하세요
-            setInviteOpen(false);
-        } catch (error) {
-            console.error('Failed to invite:', error);
-        }
-    };
-
     const handleLogout = async () => {
         try {
             await logout();
-            setUser(null);
             setExpiryTime(30);
             setSnackbarMessage('로그아웃 성공!');
             setSnackbarSeverity('success');
-            setSnackbarOpen(true);
         } catch (error) {
-            setSnackbarMessage('로그아웃 실패. 다시 시도해주세요.');
+            setSnackbarMessage(error.message || '로그아웃 실패. 다시 시도해주세요.');
             setSnackbarSeverity('error');
-            console.error('Failed to logout:', error);
+        } finally {
             setSnackbarOpen(true);
         }
     };
 
     const handleExtendTime = async () => {
         try {
-            const newTokens = await reissueToken();
-            console.log('New tokens:', newTokens);
+            await reissueToken();
             setExpiryTime(30);
             setSnackbarMessage('시간 연장 성공!');
             setSnackbarSeverity('success');
-            setSnackbarOpen(true);
         } catch (error) {
-            setSnackbarMessage('시간 연장 실패. 다시 시도해주세요.');
+            setSnackbarMessage(error.message || '시간 연장 실패. 다시 시도해주세요.');
             setSnackbarSeverity('error');
-            console.error('Failed to reissue token:', error);
+        } finally {
             setSnackbarOpen(true);
         }
     };
@@ -154,28 +117,18 @@ const Header = ({ onLogin, user: initialUser }) => {
                 </Box>
             </AppBar>
 
-            {loginOpen && (
-                <div>
-                    <LoginForm open={loginOpen} onClose={() => setLoginOpen(false)} onLogin={handleLogin} />
-                </div>
-            )}
-            {signUpOpen && (
-                <div>
-                    <SignUpForm open={signUpOpen} onClose={() => setSignUpOpen(false)} onSignUp={handleSignUp} />
-                </div>
-            )}
-            {inviteOpen && (
-                <div>
-                    <InvitationForm open={inviteOpen} onClose={() => setInviteOpen(false)} onInvite={handleInvite} />
-                </div>
-            )}
-            {userManageOpen && (
-                <div>
-                    <UserManagementForm open={userManageOpen} onClose={() => setUserManageOpen(false)} user={user} />
-                </div>
-            )}
+            {loginOpen && <LoginForm open={loginOpen} onClose={() => setLoginOpen(false)} />}
+            {signUpOpen && <SignUpForm open={signUpOpen} onClose={() => setSignUpOpen(false)} />}
+            {inviteOpen && <InvitationForm open={inviteOpen} onClose={() => setInviteOpen(false)} />}
+            {userManageOpen && <UserManagementForm open={userManageOpen} onClose={() => setUserManageOpen(false)} user={user} />}
 
-            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                sx={{ '& .MuiSnackbarContent-root': { backgroundColor: snackbarSeverity === 'success' ? 'green' : 'red', color: 'white', opacity: 0.8 } }}
+            >
                 <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
                 </Alert>

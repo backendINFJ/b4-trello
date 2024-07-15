@@ -1,29 +1,18 @@
 import React, { useState } from 'react';
-import { Modal, Box, Typography, Button, TextField, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Modal, Box, Typography, Button, TextField } from '@mui/material';
 
-const LoginForm = ({ open, onClose, onLogin }) => {
+const LoginModal = ({ open, onClose, onLogin, openSignUp }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
     const handleSubmit = async () => {
-        try {
-            await onLogin({ username, password });
-            setUsername('');
-            setPassword('');
-            onClose();
-        } catch (error) {
-            console.error('Failed to log in:', error);
-        }
+        await onLogin({ username, password });
     };
 
     return (
         <Modal open={open} onClose={onClose}>
-            <Box sx={{ p: 4, bgcolor: 'white', borderRadius: 1, width: 300, mx: 'auto', mt: '20vh', textAlign: 'center', position: 'relative' }}>
-                <IconButton sx={{ position: 'absolute', right: 8, top: 8 }} onClick={onClose}>
-                    <CloseIcon />
-                </IconButton>
-                <Typography variant="h6" sx={{ mb: 2 }}>Login</Typography>
+            <Box sx={{ ...modalStyle }}>
+                <Typography variant="h6">Login</Typography>
                 <TextField
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -44,9 +33,24 @@ const LoginForm = ({ open, onClose, onLogin }) => {
                 <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
                     Login
                 </Button>
+                <Typography variant="body2" sx={{ mt: 2, cursor: 'pointer' }} onClick={openSignUp}>
+                    Don't have an account? Sign Up
+                </Typography>
             </Box>
         </Modal>
     );
 };
 
-export default LoginForm;
+const modalStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+};
+
+export default LoginModal;

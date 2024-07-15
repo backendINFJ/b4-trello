@@ -10,7 +10,7 @@ public enum JwtEnum {
      * ("Bearer ");   //인증타입
      */
     ACCESS_TOKEN("Authorization"),
-    REFRESH_TOKEN("refresh-token"),
+    REFRESH_TOKEN("Refresh-Token"),
     GRANT_TYPE("Bearer ");
     private String description;
 

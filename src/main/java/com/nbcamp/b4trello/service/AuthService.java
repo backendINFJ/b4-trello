@@ -60,7 +60,6 @@ public class AuthService implements LogoutHandler {
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         String authHeader = request.getHeader(JwtEnum.ACCESS_TOKEN.getValue());
-
         if (authHeader == null || !authHeader.startsWith(JwtEnum.GRANT_TYPE.getValue())) {
             throw new IllegalArgumentException(ErrorMessageEnum.AUTH_BAD_ACCESS.getMessage());
         }
