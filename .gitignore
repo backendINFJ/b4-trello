@@ -183,3 +183,7 @@ $RECYCLE.BIN/
 /.idea/modules.xml
 /.gradle
 /build
+!/.gradle/
+!/.idea/
+!/build/
+!/gradle/
