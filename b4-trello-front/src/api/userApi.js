@@ -4,7 +4,7 @@ const API_URL = 'http://localhost:8080';
 
 // 유저 API 호출
 export const createUser = async (userData) => {
-  const response = await axios.post(`${API_URL}/users`, userData);
+  const response = await axios.post(`${API_URL}/users/signup`, userData);
   return response.data;
 };
 
@@ -23,6 +23,7 @@ export const sendInvite = async (inviteData) => {
   return response.data;
 };
 
+// 인증 관련 API 호출
 export const login = async (credentials) => {
   const response = await axios.post(`${API_URL}/auth/login`, credentials);
   return response.data;
@@ -30,5 +31,10 @@ export const login = async (credentials) => {
 
 export const reissueToken = async () => {
   const response = await axios.post(`${API_URL}/auth/reissue`);
+  return response.data;
+};
+
+export const logout = async () => {
+  const response = await axios.post(`${API_URL}/auth/logout`);
   return response.data;
 };

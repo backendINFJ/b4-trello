@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Box, Typography, Button, TextField, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { createUser } from '../api/userApi'; // 여기에서 올바르게 임포트
+import { createUser } from '../api/userApi'; // 올바르게 임포트
 
 const SignUpForm = ({ open, onClose, onSignUp }) => {
     const [username, setUsername] = useState('');

@@ -6,7 +6,7 @@ import LoginForm from './LoginForm';
 import SignUpForm from './SignUpForm';
 import InvitationForm from './InvitationForm';
 import UserManagementForm from './UserManagementForm';
-import { login, reissueToken } from '../api/authApi';
+import { login, reissueToken, logout } from '../api/authApi';
 
 const Header = ({ onLogin, user: initialUser }) => {
     const [anchorEl, setAnchorEl] = useState(null);
@@ -71,12 +71,20 @@ const Header = ({ onLogin, user: initialUser }) => {
         }
     };
 
-    const handleLogout = () => {
-        setUser(null);
-        setExpiryTime(30);
-        setSnackbarMessage('로그아웃 성공!');
-        setSnackbarSeverity('success');
-        setSnackbarOpen(true);
+    const handleLogout = async () => {
+        try {
+            await logout();
+            setUser(null);
+            setExpiryTime(30);
+            setSnackbarMessage('로그아웃 성공!');
+            setSnackbarSeverity('success');
+            setSnackbarOpen(true);
+        } catch (error) {
+            setSnackbarMessage('로그아웃 실패. 다시 시도해주세요.');
+            setSnackbarSeverity('error');
+            console.error('Failed to logout:', error);
+            setSnackbarOpen(true);
+        }
     };
 
     const handleExtendTime = async () => {
