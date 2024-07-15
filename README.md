@@ -64,18 +64,23 @@ front : React
 할일 카드를 컬럼에 상관없이 이동시킬 수 있다.
 
 ⚙️ ERD 다이어그램
+
 https://www.erdcloud.com/d/DorZ9XX4NctjHJsuD
 
 📝 와이어 프레임
+
 https://www.figma.com/board/GqzWykGwrTdzDZ1WKIlJiE/Untitled?node-id=0-1&t=uI0rFtROYM34ORmV-0
 
 ✒️ API 상세설명 및 명세서
+
 ![image](https://github.com/user-attachments/assets/511739e5-829d-421a-872f-7331a0afddfc)
 
 https://www.notion.so/teamsparta/4-2948189294634a79a9b990747c9399e0
 
 ⚙️ 코드 컨벤션
+
 https://www.notion.so/teamsparta/Code-Convention-616a6cb0f4684f8d968f50327108cba9
 
 ⚙️ 깃허브 커밋 컨벤션
+
 https://www.notion.so/teamsparta/Github-Rules-82bd2468f56a479192cddf7772b22d89
