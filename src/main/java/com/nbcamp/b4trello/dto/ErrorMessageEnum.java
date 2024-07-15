@@ -24,7 +24,7 @@ public enum ErrorMessageEnum {
 	EXPIRED_TOKEN("만료된 토큰"),
 	JWT_CLAIMS_EMPTY("토큰 정보가 없습니다."),
 	MAIL_BAD_REQUEST("잘못된 인증번호입니다."),
-
+	ALREADY_MAIL_ACCESS("이미 인증을 받은 계정입니다."),
 	//board error
 	BOARD_NOT_FOUND("보드를 찾을 수 없습니다."),
 	BOARD_ACCESS_DENIED("보드 접근이 거부되었습니다."),

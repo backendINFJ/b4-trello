@@ -68,7 +68,7 @@ public class AuthController {
     @PostMapping("/send-mail")
     public ResponseEntity<String> sendMail(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        authService.sendMail(userDetails.getUser().getEmail());
+        authService.sendMail(userDetails.getUser());
         return ResponseEntity.status(ResponseEnum.SEND_MAIL.getHttpStatus()).body(ResponseEnum.SEND_MAIL.getMessage());
 
 
