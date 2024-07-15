@@ -1,9 +1,10 @@
+// src/components/Modal.js
 import React from 'react';
-import { Modal as MuiModal, Box, Button } from '@mui/material';
+import { Modal as MuiModal, Box } from '@mui/material';
 
-const Modal = ({ isOpen, onClose, children }) => {
+const Modal = ({ open, onClose, children }) => {
     return (
-        <MuiModal open={isOpen} onClose={onClose}>
+        <MuiModal open={open} onClose={onClose}>
             <Box sx={{
                 position: 'absolute',
                 top: '50%',
@@ -14,11 +15,6 @@ const Modal = ({ isOpen, onClose, children }) => {
                 boxShadow: 24,
                 p: 4,
             }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                    <Button onClick={onClose} sx={{ color: 'red' }}>●</Button>
-                    <Button sx={{ color: 'orange' }}>●</Button>
-                    <Button sx={{ color: 'green' }}>●</Button>
-                </Box>
                 {children}
             </Box>
         </MuiModal>

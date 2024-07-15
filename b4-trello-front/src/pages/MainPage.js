@@ -5,17 +5,23 @@ import BoardList from '../components/BoardList';
 import Board from '../components/Board';
 import BoardNameModal from '../components/BoardNameModal';
 import NewBoardModal from '../components/NewBoardModal';
+import ProfileEditModal from '../components/ProfileEditModal';
 import { getBoards, createBoard, deleteBoard, updateBoardName } from '../api/boardApi';
+import { login } from '../api/userApi';
+import ExceptionModal from '../components/ExceptionModal';
 
 const MainPage = () => {
     const [boards, setBoards] = useState([]);
     const [selectedBoardId, setSelectedBoardId] = useState(null);
     const [selectedBoardTitle, setSelectedBoardTitle] = useState('');
     const [selectedBoardDescription, setSelectedBoardDescription] = useState('');
-    const [isManager, setIsManager] = useState(false); // 매니저 권한 상태
+    const [isManager, setIsManager] = useState(false);
     const [boardNameModalOpen, setBoardNameModalOpen] = useState(false);
     const [newBoardModalOpen, setNewBoardModalOpen] = useState(false);
     const [editBoardModalOpen, setEditBoardModalOpen] = useState(false);
+    const [exceptionModalOpen, setExceptionModalOpen] = useState(false);
+    const [exceptionMessage, setExceptionMessage] = useState('');
+    const [user, setUser] = useState(null); // 현재 로그인된 사용자 정보를 저장합니다.
 
     useEffect(() => {
         const fetchBoards = async () => {
@@ -34,11 +40,6 @@ const MainPage = () => {
         fetchBoards();
     }, []);
 
-    // 매니저 권한을 토글하는 함수 (테스트 용도)
-    const toggleIsManager = () => {
-        setIsManager(!isManager);
-    };
-
     const handleSelectBoard = (boardId) => {
         const selectedBoard = boards.find(board => board.id === boardId);
         setSelectedBoardId(boardId);
@@ -47,7 +48,7 @@ const MainPage = () => {
     };
 
     const handleUpdateBoardName = (newName) => {
-        updateBoardName(selectedBoardId, newName); // API call to update the board name
+        updateBoardName(selectedBoardId, newName);
         const updatedBoards = boards.map(board =>
             board.id === selectedBoardId ? { ...board, title: newName } : board
         );
@@ -75,9 +76,19 @@ const MainPage = () => {
         setSelectedBoardId(boards.length > 0 ? boards[0].id : null);
     };
 
+    const handleLogin = async (credentials) => {
+        try {
+            const userData = await login(credentials);
+            setUser(userData);
+        } catch (error) {
+            setExceptionMessage('Failed to login');
+            setExceptionModalOpen(true);
+        }
+    };
+
     return (
         <Box>
-            <Header />
+            <Header onLogin={handleLogin} user={user} />
             <Box display="flex" height="calc(100vh - 64px)" overflow="hidden">
                 <Box width="300px" overflow="auto">
                     <BoardList
@@ -87,7 +98,7 @@ const MainPage = () => {
                         onDeleteBoard={handleDeleteBoard}
                     />
                     <Button onClick={() => setNewBoardModalOpen(true)} sx={{ margin: 2 }}>+ Create Board</Button>
-                    <Button onClick={toggleIsManager} sx={{ margin: 2 }}>
+                    <Button onClick={() => setIsManager(!isManager)} sx={{ margin: 2 }}>
                         {isManager ? 'Revoke Manager' : 'Grant Manager'}
                     </Button>
                 </Box>
@@ -112,6 +123,11 @@ const MainPage = () => {
                 open={newBoardModalOpen}
                 onClose={() => setNewBoardModalOpen(false)}
                 onSubmit={handleCreateBoard}
+            />
+            <ExceptionModal
+                open={exceptionModalOpen}
+                onClose={() => setExceptionModalOpen(false)}
+                message={exceptionMessage}
             />
         </Box>
     );

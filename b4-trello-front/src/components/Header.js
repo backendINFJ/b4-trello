@@ -1,17 +1,33 @@
-import React, { useState } from 'react';
-import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem, Snackbar, Alert } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LoginForm from './LoginForm';
 import SignUpForm from './SignUpForm';
 import InvitationForm from './InvitationForm';
 import UserManagementForm from './UserManagementForm';
+import { login, reissueToken } from '../api/authApi';
 
-const Header = () => {
+const Header = ({ onLogin, user: initialUser }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [loginOpen, setLoginOpen] = useState(false);
     const [signUpOpen, setSignUpOpen] = useState(false);
     const [inviteOpen, setInviteOpen] = useState(false);
     const [userManageOpen, setUserManageOpen] = useState(false);
+    const [user, setUser] = useState(initialUser);
+    const [expiryTime, setExpiryTime] = useState(30);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+    useEffect(() => {
+        if (user) {
+            const timer = setInterval(() => {
+                setExpiryTime((prev) => prev - 1);
+            }, 60000);
+            return () => clearInterval(timer);
+        }
+    }, [user]);
 
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -21,19 +37,66 @@ const Header = () => {
         setAnchorEl(null);
     };
 
-    const handleLogin = (credentials) => {
-        console.log('Logging in with', credentials);
-        // 로그인 로직 추가
+    const handleLogin = async (credentials) => {
+        try {
+            const userData = await login(credentials);
+            setUser(userData);
+            setSnackbarMessage('로그인 성공!');
+            setSnackbarSeverity('success');
+            setLoginOpen(false);
+        } catch (error) {
+            setSnackbarMessage('로그인 실패. 다시 시도해주세요.');
+            setSnackbarSeverity('error');
+            console.error('Failed to login:', error);
+        } finally {
+            setSnackbarOpen(true);
+        }
     };
 
-    const handleSignUp = (userInfo) => {
-        console.log('Signing up with', userInfo);
-        // 회원가입 로직 추가
+    const handleSignUp = async (userInfo) => {
+        try {
+            // SignUp 로직을 추가하세요
+            setSignUpOpen(false);
+        } catch (error) {
+            console.error('Failed to sign up:', error);
+        }
     };
 
-    const handleInvite = (email) => {
-        console.log('Inviting', email);
-        // 초대 로직 추가
+    const handleInvite = async (email) => {
+        try {
+            // Invite 로직을 추가하세요
+            setInviteOpen(false);
+        } catch (error) {
+            console.error('Failed to invite:', error);
+        }
+    };
+
+    const handleLogout = () => {
+        setUser(null);
+        setExpiryTime(30);
+        setSnackbarMessage('로그아웃 성공!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+    };
+
+    const handleExtendTime = async () => {
+        try {
+            const newTokens = await reissueToken();
+            console.log('New tokens:', newTokens);
+            setExpiryTime(30);
+            setSnackbarMessage('시간 연장 성공!');
+            setSnackbarSeverity('success');
+            setSnackbarOpen(true);
+        } catch (error) {
+            setSnackbarMessage('시간 연장 실패. 다시 시도해주세요.');
+            setSnackbarSeverity('error');
+            console.error('Failed to reissue token:', error);
+            setSnackbarOpen(true);
+        }
+    };
+
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
     };
 
     return (
@@ -49,11 +112,32 @@ const Header = () => {
                         <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'center' }}>
                             Trello
                         </Typography>
+                        {user ? (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography>{user.nickname}</Typography>
+                                <AccessTimeIcon />
+                                <Typography>{expiryTime}분</Typography>
+                                <Button variant="outlined" color="inherit" onClick={handleExtendTime}>
+                                    시간 연장
+                                </Button>
+                                <Button color="inherit" onClick={handleLogout}>
+                                    로그아웃
+                                </Button>
+                            </Box>
+                        ) : (
+                            <Button color="inherit" onClick={() => setLoginOpen(true)}>
+                                로그인
+                            </Button>
+                        )}
                         <IconButton edge="end" color="inherit" aria-label="menu" onClick={handleMenu}>
                             <MenuIcon />
                         </IconButton>
                         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-                            <MenuItem onClick={() => setLoginOpen(true)}>로그인</MenuItem>
+                            {user ? (
+                                <MenuItem onClick={handleLogout}>로그아웃</MenuItem>
+                            ) : (
+                                <MenuItem onClick={() => setLoginOpen(true)}>로그인</MenuItem>
+                            )}
                             <MenuItem onClick={() => setSignUpOpen(true)}>회원가입</MenuItem>
                             <MenuItem onClick={() => setInviteOpen(true)}>초대하기</MenuItem>
                             <MenuItem onClick={() => setUserManageOpen(true)}>계정관리</MenuItem>
@@ -62,10 +146,32 @@ const Header = () => {
                 </Box>
             </AppBar>
 
-            <LoginForm open={loginOpen} onClose={() => setLoginOpen(false)} onLogin={handleLogin} />
-            <SignUpForm open={signUpOpen} onClose={() => setSignUpOpen(false)} onSignUp={handleSignUp} />
-            <InvitationForm open={inviteOpen} onClose={() => setInviteOpen(false)} onInvite={handleInvite} />
-            <UserManagementForm open={userManageOpen} onClose={() => setUserManageOpen(false)} />
+            {loginOpen && (
+                <div>
+                    <LoginForm open={loginOpen} onClose={() => setLoginOpen(false)} onLogin={handleLogin} />
+                </div>
+            )}
+            {signUpOpen && (
+                <div>
+                    <SignUpForm open={signUpOpen} onClose={() => setSignUpOpen(false)} onSignUp={handleSignUp} />
+                </div>
+            )}
+            {inviteOpen && (
+                <div>
+                    <InvitationForm open={inviteOpen} onClose={() => setInviteOpen(false)} onInvite={handleInvite} />
+                </div>
+            )}
+            {userManageOpen && (
+                <div>
+                    <UserManagementForm open={userManageOpen} onClose={() => setUserManageOpen(false)} user={user} />
+                </div>
+            )}
+
+            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     );
 };

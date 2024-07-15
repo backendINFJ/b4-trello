@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Modal, Box, Typography, IconButton, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CommentIcon from '@mui/icons-material/Comment';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const CardDetailModal = ({ open, onClose, card, onDelete }) => {
+
+    useEffect(() => {
+        if (open && !card) {
+            onClose();
+        }
+    }, [open, card, onClose]);
+
     if (!card) {
         return null;
     }
