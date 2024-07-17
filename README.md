@@ -29,7 +29,7 @@ Version : Java 17
 
 IDE : IntelliJ
 
-Framework : SpringBoot 3.3.x
+Framework : SpringBoot 3.3.2
 
 ORM : JPA
 
